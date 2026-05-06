@@ -109,6 +109,13 @@ tr:hover td{background:#f8fafc}
 .collapsible-body{padding:0 18px 18px}
 .section-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:flex-end}
 .count-pill{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;background:#fee2e2;color:#991b1b;font-weight:900;font-size:12px}
+
+.meb-kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-bottom:14px}
+.meb-kpi .stat{border-left:5px solid #2563eb}
+.meb-note{background:#eef2ff;border:1px solid #c7d2fe;color:#1e3a8a;border-radius:14px;padding:12px 14px;font-weight:800;margin:10px 0 14px}
+.meb-mini-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:980px){.meb-mini-grid{grid-template-columns:1fr}}
+
 @media(max-width:760px){.header{padding:14px}.actions{width:100%}.btn,.file-label{width:100%;justify-content:center}.collapsible>summary{font-size:16px;padding:15px}.collapsible-body{padding:0 12px 12px}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.stat .num{font-size:22px}table{min-width:980px}.panel{padding:13px}.section-title{align-items:flex-start}.section-actions{width:100%;justify-content:flex-start}.select{width:100%}.toolbar{display:grid;grid-template-columns:1fr;gap:8px}}
 
 /* Yerel giriş/rol sistemi */
@@ -268,6 +275,31 @@ tr:hover td{background:#f8fafc}
       </div>
     </details>
 
+
+    <details class="collapsible" id="mebCalendarSection">
+      <summary>MEB Takvimli Devamsızlık Analizi <span class="badge" style="background:#fee2e2;color:#991b1b">Cuma-Pazartesi · sınav haftası · en yüksek günler</span></summary>
+      <div class="collapsible-body">
+        <div class="meb-note">2025-2026 MEB iş günü takvimi ve sınav haftalarına göre devamsızlık yüzdeleri otomatik hesaplanır. Yüzde hesabı: ilgili gruptaki devamsız öğrenci sayısı / toplam öğrenci sayısı.</div>
+        <div class="meb-kpi" id="mebSummaryCards"></div>
+        <div class="chart-box">
+          <div class="section-title"><h3 class="chart-title">Okul Geneli En Yüksek Devamsızlık Günleri</h3><button class="btn blue" onclick="exportMebTopDaysExcel()">⬇️ Excel</button></div>
+          <div id="mebTopDaysTable" class="table-wrap"></div>
+        </div>
+        <div class="meb-mini-grid">
+          <div class="chart-box"><div class="section-title"><h3 class="chart-title">Haftanın Günleri Okul Geneli</h3><button class="btn blue" onclick="exportMebWeekdayExcel()">⬇️ Excel</button></div><div id="mebWeekdayTable" class="table-wrap"></div></div>
+          <div class="chart-box"><div class="section-title"><h3 class="chart-title">Hafta Sonu Öncesi Cuma / Sonrası Pazartesi</h3><button class="btn blue" onclick="exportMebFridayMondayExcel()">⬇️ Excel</button></div><div id="mebFridayMondayTable" class="table-wrap"></div></div>
+        </div>
+        <div class="chart-box">
+          <div class="section-title"><h3 class="chart-title">Sınav Haftaları: Öncesi · Sırası · Sonrası Günlük Yüzdeler</h3><button class="btn blue" onclick="exportMebExamExcel()">⬇️ Excel</button></div>
+          <div id="mebExamTable" class="table-wrap"></div>
+        </div>
+        <div class="chart-box">
+          <div class="section-title"><h3 class="chart-title">Sınıf Düzeyi ve Sınıf Bazlı En Yüksek Günler</h3><button class="btn blue" onclick="exportMebGroupTopExcel()">⬇️ Excel</button></div>
+          <div id="mebGroupTopTable" class="table-wrap"></div>
+        </div>
+      </div>
+    </details>
+
     <details class="collapsible" id="chartsSection">
       <summary>Grafik ve Bar İstatistikleri <span class="badge" style="background:#dcfce7;color:#166534">9-10-11-12 · ay · cinsiyet</span></summary>
       <div class="collapsible-body">
@@ -305,6 +337,7 @@ tr:hover td{background:#f8fafc}
           <button class="btn blue" onclick="exportRisk10Excel()">⬇️ 10 Gün Özürsüz Excel</button>
           <button class="btn blue" onclick="exportRisk30Excel()">⬇️ 30 Gün Toplam Excel</button>
           <button class="btn blue" onclick="exportZeroAbsenceExcel()">⬇️ Devamsızlığı Olmayanlar Excel</button>
+          <button class="btn blue" onclick="exportMebFullExcel()">⬇️ MEB Takvimli Analiz Excel</button>
         </div>
       </div>
     </details>
@@ -327,6 +360,18 @@ tr:hover td{background:#f8fafc}
       <div class="grid" id="studentCards"></div>
     </div>
     <div id="studentDetail" class="panel hidden"></div>
+
+    <div class="panel">
+      <div class="section-title"><h2>Sınıf MEB Takvimli Analiz</h2><button class="btn blue" onclick="exportClassMebAnalysisExcel()">⬇️ Bu Sınıf MEB Analiz Excel</button></div>
+      <div class="meb-note">Bu bölüm sadece seçili sınıfı hesaplar: Cuma-Pazartesi, sınav haftası öncesi/sırası/sonrası ve en yüksek devamsızlık günleri.</div>
+      <div class="meb-kpi" id="classMebSummaryCards"></div>
+      <div class="meb-mini-grid">
+        <div class="chart-box"><div class="section-title"><h3 class="chart-title">Bu Sınıfta En Yüksek Günler</h3></div><div id="classMebTopDaysTable" class="table-wrap"></div></div>
+        <div class="chart-box"><div class="section-title"><h3 class="chart-title">Bu Sınıfta Haftanın Günleri</h3></div><div id="classMebWeekdayTable" class="table-wrap"></div></div>
+      </div>
+      <div class="chart-box"><div class="section-title"><h3 class="chart-title">Bu Sınıf Cuma / Pazartesi</h3></div><div id="classMebFridayMondayTable" class="table-wrap"></div></div>
+      <div class="chart-box"><div class="section-title"><h3 class="chart-title">Bu Sınıf Sınav Haftaları Günlük</h3></div><div id="classMebExamTable" class="table-wrap"></div></div>
+    </div>
     <div class="panel">
       <div class="section-title"><h2>Sınıf Kontrol Tablosu</h2><span class="badge" style="background:#dcfce7;color:#166534">Genel toplam görünür</span></div>
       <div class="stats" id="classControlStats"></div>
@@ -968,6 +1013,203 @@ function exportPerStudentSchoolExcel(){ downloadXlsx(perStudentMetricRows('schoo
 function exportPerStudentLevelExcel(){ downloadXlsx(perStudentMetricRows('level'), 'ogrenci_basina_sinif_duzeyi.xlsx'); }
 function exportPerStudentClassExcel(){ downloadXlsx(perStudentMetricRows('class'), 'ogrenci_basina_sinif_bazli.xlsx'); }
 
+
+const EXAM_WEEKS = [
+  {name:'1. Dönem 1. Yazılılar', start:'2025-10-27', end:'2025-11-07'},
+  {name:'1. Dönem 2. Yazılılar', start:'2025-12-22', end:'2026-01-09'},
+  {name:'2. Dönem 1. Yazılılar', start:'2026-03-30', end:'2026-04-10'},
+  {name:'2. Dönem 2. Yazılılar', start:'2026-06-01', end:'2026-06-12'}
+];
+const DAY_NAMES = ['Pazar','Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi'];
+function parseISODate(iso){ const [y,m,d]=String(iso).split('-').map(Number); return new Date(y,m-1,d); }
+function addDays(date, n){ const d=new Date(date); d.setDate(d.getDate()+n); return d; }
+function rowISO(r){
+  if(r.tarihTR){ const d=excelSerialToDate(r.tarihTR); return isoDate(d); }
+  if(r.tarih){ const d=(r.tarih instanceof Date)?r.tarih:excelSerialToDate(r.tarih); return isoDate(d); }
+  return '';
+}
+function groupStudents(filter={}){
+  const list=[];
+  classes.forEach(c=>{
+    if(filter.classKey && c.key!==filter.classKey) return;
+    if(filter.level && c.seviye!==String(filter.level)) return;
+    c.students.forEach(st=>list.push({...st,classKey:c.key}));
+  });
+  return list;
+}
+function groupDenominators(filter={}){
+  const students=groupStudents(filter);
+  return {
+    total:students.length,
+    kız:students.filter(s=>s.cinsiyet==='Kız').length,
+    erkek:students.filter(s=>s.cinsiyet==='Erkek').length
+  };
+}
+function absenceRowsForFilter(filter={}){
+  const allowed=new Set(groupStudents(filter).map(s=>String(s.no)));
+  return absenceRows.filter(r=>allowed.has(String(r.no)) && classify(r.kod)!=='haric' && rowISO(r));
+}
+function dailyStatsMap(filter={}){
+  const den=groupDenominators(filter);
+  const map=new Map();
+  absenceRowsForFilter(filter).forEach(r=>{
+    const iso=rowISO(r); if(!iso) return;
+    if(!map.has(iso)) map.set(iso,{iso,date:parseISODate(iso),students:new Set(),girls:new Set(),boys:new Set(),ozursuz:0,ozurlu:0,totalDays:0});
+    const x=map.get(iso);
+    x.students.add(String(r.no));
+    if(r.cinsiyet==='Kız') x.girls.add(String(r.no));
+    if(r.cinsiyet==='Erkek') x.boys.add(String(r.no));
+    const val=Number(r.gunSayisi)||0;
+    if(classify(r.kod)==='ozursuz') x.ozursuz+=val;
+    if(classify(r.kod)==='ozurlu') x.ozurlu+=val;
+    x.totalDays+=val;
+  });
+  return {map,den};
+}
+function dailyRowFromStat(stat, den, extra={}){
+  if(!stat){
+    const d=parseISODate(extra.iso);
+    stat={iso:extra.iso,date:d,students:new Set(),girls:new Set(),boys:new Set(),ozursuz:0,ozurlu:0,totalDays:0};
+  }
+  return {
+    'TARİH': dateToTR(stat.date),
+    'GÜN': DAY_NAMES[stat.date.getDay()],
+    'BİRİM': extra.birim || 'Okul Geneli',
+    'DÖNEM': extra.period || '',
+    'AŞAMA': extra.phase || '',
+    'ÖĞRENCİ': den.total,
+    'DEVAMSIZ ÖĞRENCİ': stat.students.size,
+    'DEVAMSIZ %': pct(stat.students.size, den.total),
+    'KIZ ÖĞRENCİ': den.kız,
+    'KIZ DEVAMSIZ': stat.girls.size,
+    'KIZ %': pct(stat.girls.size, den.kız),
+    'ERKEK ÖĞRENCİ': den.erkek,
+    'ERKEK DEVAMSIZ': stat.boys.size,
+    'ERKEK %': pct(stat.boys.size, den.erkek),
+    'ÖZÜRSÜZ GÜN': Math.round(stat.ozursuz*10)/10,
+    'ÖZÜRLÜ GÜN': Math.round(stat.ozurlu*10)/10,
+    'TOPLAM GÜN': Math.round(stat.totalDays*10)/10
+  };
+}
+function dailyRows(filter={}, includeZero=false){
+  const {map,den}=dailyStatsMap(filter);
+  let rows=[...map.values()].map(st=>dailyRowFromStat(st,den,{birim:filter.label||'Okul Geneli'}));
+  if(includeZero){
+    schoolDatesBetween(SCHOOL_START,SCHOOL_END).forEach(d=>{
+      const iso=isoDate(d); if(!map.has(iso)) rows.push(dailyRowFromStat(null,den,{iso,birim:filter.label||'Okul Geneli'}));
+    });
+  }
+  return rows.sort((a,b)=>parseTRDate(a['TARİH'])-parseTRDate(b['TARİH']));
+}
+function parseTRDate(s){ const [d,m,y]=String(s).split('.').map(Number); return new Date(y,m-1,d); }
+function schoolDatesBetween(start, end){
+  const out=[];
+  for(let d=new Date(start); d<=end; d=addDays(d,1)){ if(schoolOpenDayValue(d)>0) out.push(new Date(d)); }
+  return out;
+}
+function previousSchoolDates(startISO, count){
+  const out=[]; let d=addDays(parseISODate(startISO),-1);
+  while(out.length<count && d>=SCHOOL_START){ if(schoolOpenDayValue(d)>0) out.unshift(new Date(d)); d=addDays(d,-1); }
+  return out;
+}
+function nextSchoolDates(endISO, count){
+  const out=[]; let d=addDays(parseISODate(endISO),1);
+  while(out.length<count && d<=SCHOOL_END){ if(schoolOpenDayValue(d)>0) out.push(new Date(d)); d=addDays(d,1); }
+  return out;
+}
+function topAbsenceDays(filter={}, limit=20){
+  return dailyRows(filter,false).sort((a,b)=>b['DEVAMSIZ %']-a['DEVAMSIZ %'] || b['DEVAMSIZ ÖĞRENCİ']-a['DEVAMSIZ ÖĞRENCİ']).slice(0,limit);
+}
+function weekdayAnalysisRows(filter={}){
+  const rows=dailyRows(filter,false); const den=groupDenominators(filter);
+  return ['Pazartesi','Salı','Çarşamba','Perşembe','Cuma'].map(day=>{
+    const dr=rows.filter(r=>r['GÜN']===day);
+    const avg=dr.length?dr.reduce((s,r)=>s+r['DEVAMSIZ %'],0)/dr.length:0;
+    const top=dr.slice().sort((a,b)=>b['DEVAMSIZ %']-a['DEVAMSIZ %'])[0];
+    return {'GÜN':day,'VERİ OLAN GÜN':dr.length,'ORTALAMA DEVAMSIZ %':Math.round(avg*10)/10,'EN YÜKSEK TARİH':top?top['TARİH']:'','EN YÜKSEK %':top?top['DEVAMSIZ %']:0,'KIZ EN YÜKSEK %':top?top['KIZ %']:0,'ERKEK EN YÜKSEK %':top?top['ERKEK %']:0,'ÖĞRENCİ':den.total};
+  });
+}
+function fridayMondayRows(filter={}){
+  const {map,den}=dailyStatsMap(filter); const rows=[];
+  schoolDatesBetween(SCHOOL_START,SCHOOL_END).forEach(d=>{
+    if(d.getDay()!==5) return;
+    const mon=addDays(d,3);
+    if(mon>SCHOOL_END || schoolOpenDayValue(mon)<=0) return;
+    const friIso=isoDate(d), monIso=isoDate(mon);
+    rows.push({...dailyRowFromStat(map.get(friIso),den,{iso:friIso,birim:filter.label||'Okul Geneli',phase:'Hafta Sonu Öncesi Cuma'}),'EŞLEŞME':'Cuma → Pazartesi'});
+    rows.push({...dailyRowFromStat(map.get(monIso),den,{iso:monIso,birim:filter.label||'Okul Geneli',phase:'Hafta Sonu Sonrası Pazartesi'}),'EŞLEŞME':'Cuma → Pazartesi'});
+  });
+  return rows;
+}
+function examAnalysisRows(filter={}){
+  const {map,den}=dailyStatsMap(filter); const out=[];
+  EXAM_WEEKS.forEach(ex=>{
+    const before=previousSchoolDates(ex.start,5).map(d=>({d,phase:'Öncesi'}));
+    const during=schoolDatesBetween(parseISODate(ex.start),parseISODate(ex.end)).map(d=>({d,phase:'Sırası'}));
+    const after=nextSchoolDates(ex.end,5).map(d=>({d,phase:'Sonrası'}));
+    before.concat(during,after).forEach(x=>{
+      const iso=isoDate(x.d);
+      out.push(dailyRowFromStat(map.get(iso),den,{iso,birim:filter.label||'Okul Geneli',period:ex.name,phase:x.phase}));
+    });
+  });
+  return out;
+}
+function groupTopRows(){
+  const out=[];
+  ['9','10','11','12'].forEach(l=> topAbsenceDays({level:l,label:l+'. Sınıflar'},3).forEach(r=>out.push(r)));
+  classes.forEach(c=> topAbsenceDays({classKey:c.key,label:c.key},1).forEach(r=>out.push(r)));
+  return out;
+}
+const mebHeaders=[['Tarih','TARİH'],['Gün','GÜN'],['Birim','BİRİM'],['Dönem','DÖNEM'],['Aşama','AŞAMA'],['Öğrenci','ÖĞRENCİ'],['Devamsız Öğrenci','DEVAMSIZ ÖĞRENCİ'],['Devamsız %','DEVAMSIZ %'],['Kız Öğrenci','KIZ ÖĞRENCİ'],['Kız Devamsız','KIZ DEVAMSIZ'],['Kız %','KIZ %'],['Erkek Öğrenci','ERKEK ÖĞRENCİ'],['Erkek Devamsız','ERKEK DEVAMSIZ'],['Erkek %','ERKEK %'],['Özürsüz Gün','ÖZÜRSÜZ GÜN'],['Özürlü Gün','ÖZÜRLÜ GÜN'],['Toplam Gün','TOPLAM GÜN']];
+function renderMebCalendarAnalysis(){
+  const top=topAbsenceDays({},20); const week=weekdayAnalysisRows({}); const fm=fridayMondayRows({}); const exam=examAnalysisRows({}); const groupTop=groupTopRows();
+  const topOne=top[0]||{};
+  const friAvg=fm.filter(r=>r['AŞAMA'].includes('Cuma')).reduce((a,r,i,arr)=>a+r['DEVAMSIZ %']/arr.length,0)||0;
+  const monAvg=fm.filter(r=>r['AŞAMA'].includes('Pazartesi')).reduce((a,r,i,arr)=>a+r['DEVAMSIZ %']/arr.length,0)||0;
+  const cards=document.getElementById('mebSummaryCards');
+  if(cards) cards.innerHTML=statHTML([
+    {label:'En Yüksek Gün',value:topOne['TARİH']||'-',cls:'red'},
+    {label:'En Yüksek Oran',value:'%'+fmt(topOne['DEVAMSIZ %']||0),cls:'red'},
+    {label:'Kız % / Erkek %',value:`%${fmt(topOne['KIZ %']||0)} / %${fmt(topOne['ERKEK %']||0)}`},
+    {label:'Cuma Ort.',value:'%'+fmt(friAvg),cls:'orange'},
+    {label:'Pazartesi Ort.',value:'%'+fmt(monAvg),cls:'orange'}
+  ]);
+  const set=(id,headers,rows)=>{ const el=document.getElementById(id); if(el) el.innerHTML=tableHTML(headers,rows); };
+  set('mebTopDaysTable',mebHeaders,top);
+  set('mebWeekdayTable',[['Gün','GÜN'],['Veri Olan Gün','VERİ OLAN GÜN'],['Ortalama Devamsız %','ORTALAMA DEVAMSIZ %'],['En Yüksek Tarih','EN YÜKSEK TARİH'],['En Yüksek %','EN YÜKSEK %'],['Kız En Yüksek %','KIZ EN YÜKSEK %'],['Erkek En Yüksek %','ERKEK EN YÜKSEK %'],['Öğrenci','ÖĞRENCİ']],week);
+  set('mebFridayMondayTable',mebHeaders.concat([['Eşleşme','EŞLEŞME']]),fm);
+  set('mebExamTable',mebHeaders,exam);
+  set('mebGroupTopTable',mebHeaders,groupTop);
+}
+function renderClassMebAnalysis(){
+  if(!currentClassKey) return;
+  const filter={classKey:currentClassKey,label:currentClassKey};
+  const top=topAbsenceDays(filter,10); const week=weekdayAnalysisRows(filter); const fm=fridayMondayRows(filter); const exam=examAnalysisRows(filter); const topOne=top[0]||{};
+  const cards=document.getElementById('classMebSummaryCards'); if(cards) cards.innerHTML=statHTML([
+    {label:'Sınıf En Yüksek Gün',value:topOne['TARİH']||'-',cls:'red'},
+    {label:'Sınıf En Yüksek %',value:'%'+fmt(topOne['DEVAMSIZ %']||0),cls:'red'},
+    {label:'Kız % / Erkek %',value:`%${fmt(topOne['KIZ %']||0)} / %${fmt(topOne['ERKEK %']||0)}`},
+    {label:'Devamsız Öğrenci',value:topOne['DEVAMSIZ ÖĞRENCİ']||0}
+  ]);
+  const set=(id,headers,rows)=>{ const el=document.getElementById(id); if(el) el.innerHTML=tableHTML(headers,rows); };
+  set('classMebTopDaysTable',mebHeaders,top); set('classMebWeekdayTable',[['Gün','GÜN'],['Veri Olan Gün','VERİ OLAN GÜN'],['Ortalama Devamsız %','ORTALAMA DEVAMSIZ %'],['En Yüksek Tarih','EN YÜKSEK TARİH'],['En Yüksek %','EN YÜKSEK %'],['Kız En Yüksek %','KIZ EN YÜKSEK %'],['Erkek En Yüksek %','ERKEK EN YÜKSEK %'],['Öğrenci','ÖĞRENCİ']],week);
+  set('classMebFridayMondayTable',mebHeaders.concat([['Eşleşme','EŞLEŞME']]),fm); set('classMebExamTable',mebHeaders,exam);
+}
+function exportMebFullExcel(){ const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(topAbsenceDays({},100)),'En Yüksek Günler'); XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(weekdayAnalysisRows({})),'Haftanın Günleri'); XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(fridayMondayRows({})),'Cuma Pazartesi'); XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(examAnalysisRows({})),'Sınav Haftaları'); XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(groupTopRows()),'Seviye Sınıf Top'); XLSX.writeFile(wb,'meb_takvimli_devamsizlik_analizi.xlsx'); }
+function exportMebTopDaysExcel(){downloadXlsx(topAbsenceDays({},100),'meb_en_yuksek_devamsizlik_gunleri.xlsx')}
+function exportMebWeekdayExcel(){downloadXlsx(weekdayAnalysisRows({}),'meb_haftanin_gunleri.xlsx')}
+function exportMebFridayMondayExcel(){downloadXlsx(fridayMondayRows({}),'meb_cuma_pazartesi.xlsx')}
+function exportMebExamExcel(){downloadXlsx(examAnalysisRows({}),'meb_sinav_haftalari_gunluk.xlsx')}
+function exportMebGroupTopExcel(){downloadXlsx(groupTopRows(),'meb_seviye_sinif_en_yuksek_gunler.xlsx')}
+function exportClassMebAnalysisExcel(){
+  if(!currentClassKey) return; const filter={classKey:currentClassKey,label:currentClassKey}; const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(topAbsenceDays(filter,100)),'En Yüksek Günler');
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(weekdayAnalysisRows(filter)),'Haftanın Günleri');
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(fridayMondayRows(filter)),'Cuma Pazartesi');
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(examAnalysisRows(filter)),'Sınav Haftaları');
+  XLSX.writeFile(wb,currentClassKey+'_meb_takvimli_analiz.xlsx');
+}
+
 function renderHome(){
   document.getElementById('homeView').classList.remove('hidden');
   document.getElementById('classView').classList.add('hidden');
@@ -989,6 +1231,7 @@ function renderHome(){
     </div>`;
   }).join('');
   renderStatsPanel();
+  renderMebCalendarAnalysis();
 }
 function showHome(){ currentClassKey=null; currentStudentNo=null; renderHome(); }
 function openClass(key){
@@ -1004,6 +1247,7 @@ function openClass(key){
   document.getElementById('studentDetail').classList.add('hidden');
   renderStudentCards();
   renderClassTable();
+  renderClassMebAnalysis();
 }
 function renderStudentCards(){
   const c=classes.find(x=>x.key===currentClassKey); if(!c) return;
@@ -1299,7 +1543,7 @@ function exportStudentGeneralExcel(no){
 }
 
 function exportSummaryExcel(){ downloadReportXlsx(null, 'devamsizlik_tam_rapor.xlsx'); }
-function exportDayMonthExcel(){ const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(classSummaryRows()), 'Genel Toplam'); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dayMonthRows()), 'Ay Gün'); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(monthAnalysisRows()), 'Ay Analizi'); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(perStudentMetricRows('school')), 'Öğrenci Başına Okul'); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(perStudentMetricRows('level')), 'Öğrenci Başına Seviye'); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(perStudentMetricRows('class')), 'Öğrenci Başına Sınıf'); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(riskRows('risk10')), '10 Gün Özürsüz Aşanlar'); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(riskRows('risk30')), '30 Gün Toplam Aşanlar'); XLSX.writeFile(wb, 'devamsizlik_ay_gun.xlsx'); }
+function exportDayMonthExcel(){ const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(classSummaryRows()), 'Genel Toplam'); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dayMonthRows()), 'Ay Gün'); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(monthAnalysisRows()), 'Ay Analizi'); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(perStudentMetricRows('school')), 'Öğrenci Başına Okul'); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(perStudentMetricRows('level')), 'Öğrenci Başına Seviye'); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(perStudentMetricRows('class')), 'Öğrenci Başına Sınıf'); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(riskRows('risk10')), '10 Gün Özürsüz Aşanlar'); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(riskRows('risk30')), '30 Gün Toplam Aşanlar'); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(topAbsenceDays({},100)), 'MEB En Yüksek Günler'); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(examAnalysisRows({})), 'MEB Sınav Haftaları'); XLSX.writeFile(wb, 'devamsizlik_ay_gun.xlsx'); }
 function exportClassSummaryExcel(){ if(!currentClassKey) return; downloadReportXlsx(currentClassKey, currentClassKey+'_tam_rapor.xlsx'); }
 function exportClassDayMonthExcel(){ if(!currentClassKey) return; const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(classSummaryRows(currentClassKey)), 'Genel Toplam'); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dayMonthRows(currentClassKey)), 'Ay Gün'); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(riskRows('risk10', currentClassKey)), '10 Gün Özürsüz Aşanlar'); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(riskRows('risk30', currentClassKey)), '30 Gün Toplam Aşanlar'); XLSX.writeFile(wb, currentClassKey+'_ay_gun.xlsx'); }
 resumeSession();
