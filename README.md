@@ -23,3 +23,8 @@ Gerçek merkezi kullanıcı yönetimi istenirse backend gerekir.
 
 ## data.json ile yayınlama
 Admin devamsızlık Excelini yükledikten sonra **Site Verisini JSON İndir** butonuna basar. İnen `data.json` dosyası GitHub repo kök dizinine yüklenir ve eski `data.json` üzerine yazılır. Netlify otomatik deploy sonrası öğretmenler aynı veriyi görür. Excel dosyasını GitHub’a yüklemeye gerek yoktur.
+
+
+## Hava durumu destekli analiz
+
+İzmir hava durumu verileri devamsızlık analizlerine eklendi. Ana sayfada ve sınıf detayında hava tipi, sıcaklık, yağış ve devamsızlık yüzdesi birlikte değerlendirilir.

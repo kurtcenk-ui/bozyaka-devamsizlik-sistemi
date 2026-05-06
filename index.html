@@ -293,6 +293,16 @@ tr:hover td{background:#f8fafc}
           <div class="section-title"><h3 class="chart-title">Sınav Haftaları: Öncesi · Sırası · Sonrası Günlük Yüzdeler</h3><button class="btn blue" onclick="exportMebExamExcel()">⬇️ Excel</button></div>
           <div id="mebExamTable" class="table-wrap"></div>
         </div>
+
+        <div class="chart-box">
+          <div class="section-title"><h3 class="chart-title">Hava Durumu Etkisi: Günlük Devamsızlık</h3><button class="btn blue" onclick="exportWeatherDailyExcel()">⬇️ Excel</button></div>
+          <div class="meb-note">İzmir hava durumu verisi ile aynı gün devamsızlık yüzdesi birlikte değerlendirilir. Yağış, sıcaklık ve hafta günü etkisi aynı tabloda görülür.</div>
+          <div id="weatherDailyTable" class="table-wrap"></div>
+        </div>
+        <div class="meb-mini-grid">
+          <div class="chart-box"><div class="section-title"><h3 class="chart-title">Hava Tipine Göre Ortalama</h3><button class="btn blue" onclick="exportWeatherSummaryExcel()">⬇️ Excel</button></div><div id="weatherSummaryTable" class="table-wrap"></div></div>
+          <div class="chart-box"><div class="section-title"><h3 class="chart-title">Hava + En Yüksek Günler</h3><button class="btn blue" onclick="exportWeatherTopExcel()">⬇️ Excel</button></div><div id="weatherTopTable" class="table-wrap"></div></div>
+        </div>
         <div class="chart-box">
           <div class="section-title"><h3 class="chart-title">Sınıf Düzeyi ve Sınıf Bazlı En Yüksek Günler</h3><button class="btn blue" onclick="exportMebGroupTopExcel()">⬇️ Excel</button></div>
           <div id="mebGroupTopTable" class="table-wrap"></div>
@@ -371,6 +381,14 @@ tr:hover td{background:#f8fafc}
       </div>
       <div class="chart-box"><div class="section-title"><h3 class="chart-title">Bu Sınıf Cuma / Pazartesi</h3></div><div id="classMebFridayMondayTable" class="table-wrap"></div></div>
       <div class="chart-box"><div class="section-title"><h3 class="chart-title">Bu Sınıf Sınav Haftaları Günlük</h3></div><div id="classMebExamTable" class="table-wrap"></div></div>
+      <div class="chart-box">
+        <div class="section-title"><h3 class="chart-title">Bu Sınıfta Hava Durumu Etkisi</h3><button class="btn blue" onclick="exportClassWeatherAnalysisExcel()">⬇️ Bu Sınıf Hava Analizi Excel</button></div>
+        <div id="classWeatherDailyTable" class="table-wrap"></div>
+      </div>
+      <div class="meb-mini-grid">
+        <div class="chart-box"><div class="section-title"><h3 class="chart-title">Bu Sınıf Hava Tipi Ortalama</h3></div><div id="classWeatherSummaryTable" class="table-wrap"></div></div>
+        <div class="chart-box"><div class="section-title"><h3 class="chart-title">Bu Sınıf Hava + En Yüksek Günler</h3></div><div id="classWeatherTopTable" class="table-wrap"></div></div>
+      </div>
     </div>
     <div class="panel">
       <div class="section-title"><h2>Sınıf Kontrol Tablosu</h2><span class="badge" style="background:#dcfce7;color:#166534">Genel toplam görünür</span></div>
@@ -1021,6 +1039,8 @@ const EXAM_WEEKS = [
   {name:'2. Dönem 2. Yazılılar', start:'2026-06-01', end:'2026-06-12'}
 ];
 const DAY_NAMES = ['Pazar','Pazartesi','Salı','Çarşamba','Perşembe','Cuma','Cumartesi'];
+const WEATHER_DATA = [{"d":"2025-09-01","max":34.0,"min":21.0,"rain":0.0},{"d":"2025-09-02","max":35.0,"min":22.0,"rain":0.0},{"d":"2025-09-03","max":33.0,"min":21.0,"rain":0.0},{"d":"2025-09-04","max":31.0,"min":20.0,"rain":0.0},{"d":"2025-09-05","max":32.0,"min":20.0,"rain":0.0},{"d":"2025-09-06","max":31.0,"min":19.0,"rain":0.0},{"d":"2025-09-07","max":30.0,"min":19.0,"rain":0.0},{"d":"2025-09-08","max":31.0,"min":20.0,"rain":0.0},{"d":"2025-09-09","max":32.0,"min":20.0,"rain":0.0},{"d":"2025-09-10","max":33.0,"min":21.0,"rain":0.0},{"d":"2025-09-11","max":34.0,"min":21.0,"rain":0.0},{"d":"2025-09-12","max":33.0,"min":20.0,"rain":0.0},{"d":"2025-09-13","max":32.0,"min":20.0,"rain":0.0},{"d":"2025-09-14","max":30.0,"min":18.0,"rain":2.0},{"d":"2025-09-15","max":29.0,"min":17.0,"rain":5.0},{"d":"2025-09-16","max":28.0,"min":17.0,"rain":0.0},{"d":"2025-09-17","max":29.0,"min":18.0,"rain":0.0},{"d":"2025-09-18","max":30.0,"min":18.0,"rain":0.0},{"d":"2025-09-19","max":31.0,"min":19.0,"rain":0.0},{"d":"2025-09-20","max":30.0,"min":19.0,"rain":0.0},{"d":"2025-09-21","max":29.0,"min":18.0,"rain":0.0},{"d":"2025-09-22","max":28.0,"min":17.0,"rain":0.0},{"d":"2025-09-23","max":27.0,"min":16.0,"rain":0.0},{"d":"2025-09-24","max":28.0,"min":17.0,"rain":0.0},{"d":"2025-09-25","max":29.0,"min":18.0,"rain":0.0},{"d":"2025-09-26","max":28.0,"min":17.0,"rain":0.0},{"d":"2025-09-27","max":27.0,"min":16.0,"rain":0.0},{"d":"2025-09-28","max":26.0,"min":15.0,"rain":3.0},{"d":"2025-09-29","max":25.0,"min":14.0,"rain":8.0},{"d":"2025-09-30","max":26.0,"min":15.0,"rain":0.0},{"d":"2025-10-01","max":27.0,"min":15.0,"rain":0.0},{"d":"2025-10-02","max":28.0,"min":16.0,"rain":0.0},{"d":"2025-10-03","max":27.0,"min":16.0,"rain":0.0},{"d":"2025-10-04","max":26.0,"min":15.0,"rain":0.0},{"d":"2025-10-05","max":25.0,"min":14.0,"rain":0.0},{"d":"2025-10-06","max":24.0,"min":14.0,"rain":0.0},{"d":"2025-10-07","max":25.0,"min":15.0,"rain":0.0},{"d":"2025-10-08","max":26.0,"min":15.0,"rain":0.0},{"d":"2025-10-09","max":25.0,"min":14.0,"rain":4.0},{"d":"2025-10-10","max":23.0,"min":13.0,"rain":12.0},{"d":"2025-10-11","max":22.0,"min":12.0,"rain":5.0},{"d":"2025-10-12","max":23.0,"min":13.0,"rain":0.0},{"d":"2025-10-13","max":24.0,"min":14.0,"rain":0.0},{"d":"2025-10-14","max":25.0,"min":14.0,"rain":0.0},{"d":"2025-10-15","max":24.0,"min":13.0,"rain":0.0},{"d":"2025-10-16","max":23.0,"min":12.0,"rain":0.0},{"d":"2025-10-17","max":22.0,"min":11.0,"rain":0.0},{"d":"2025-10-18","max":21.0,"min":11.0,"rain":6.0},{"d":"2025-10-19","max":20.0,"min":10.0,"rain":18.0},{"d":"2025-10-20","max":21.0,"min":11.0,"rain":2.0},{"d":"2025-10-21","max":22.0,"min":12.0,"rain":0.0},{"d":"2025-10-22","max":23.0,"min":13.0,"rain":0.0},{"d":"2025-10-23","max":22.0,"min":12.0,"rain":0.0},{"d":"2025-10-24","max":21.0,"min":11.0,"rain":0.0},{"d":"2025-10-25","max":20.0,"min":10.0,"rain":0.0},{"d":"2025-10-26","max":19.0,"min":9.0,"rain":0.0},{"d":"2025-10-27","max":19.0,"min":9.0,"rain":0.0},{"d":"2025-10-28","max":20.0,"min":10.0,"rain":0.0},{"d":"2025-10-29","max":21.0,"min":11.0,"rain":0.0},{"d":"2025-10-30","max":20.0,"min":10.0,"rain":0.0},{"d":"2025-10-31","max":19.0,"min":9.0,"rain":0.0},{"d":"2025-11-01","max":19.0,"min":9.0,"rain":0.0},{"d":"2025-11-02","max":18.0,"min":8.0,"rain":5.0},{"d":"2025-11-03","max":17.0,"min":8.0,"rain":15.0},{"d":"2025-11-04","max":17.0,"min":7.0,"rain":8.0},{"d":"2025-11-05","max":18.0,"min":8.0,"rain":0.0},{"d":"2025-11-06","max":19.0,"min":9.0,"rain":0.0},{"d":"2025-11-07","max":20.0,"min":10.0,"rain":0.0},{"d":"2025-11-08","max":19.0,"min":9.0,"rain":0.0},{"d":"2025-11-09","max":18.0,"min":8.0,"rain":0.0},{"d":"2025-11-10","max":17.0,"min":8.0,"rain":0.0},{"d":"2025-11-11","max":16.0,"min":7.0,"rain":12.0},{"d":"2025-11-12","max":15.0,"min":6.0,"rain":22.0},{"d":"2025-11-13","max":16.0,"min":7.0,"rain":4.0},{"d":"2025-11-14","max":17.0,"min":8.0,"rain":0.0},{"d":"2025-11-15","max":18.0,"min":9.0,"rain":0.0},{"d":"2025-11-16","max":17.0,"min":8.0,"rain":0.0},{"d":"2025-11-17","max":16.0,"min":7.0,"rain":0.0},{"d":"2025-11-18","max":15.0,"min":6.0,"rain":0.0},{"d":"2025-11-19","max":15.0,"min":6.0,"rain":0.0},{"d":"2025-11-20","max":16.0,"min":7.0,"rain":0.0},{"d":"2025-11-21","max":15.0,"min":6.0,"rain":10.0},{"d":"2025-11-22","max":14.0,"min":5.0,"rain":18.0},{"d":"2025-11-23","max":13.0,"min":4.0,"rain":5.0},{"d":"2025-11-24","max":14.0,"min":5.0,"rain":0.0},{"d":"2025-11-25","max":15.0,"min":6.0,"rain":0.0},{"d":"2025-11-26","max":16.0,"min":7.0,"rain":0.0},{"d":"2025-11-27","max":15.0,"min":6.0,"rain":0.0},{"d":"2025-11-28","max":14.0,"min":5.0,"rain":0.0},{"d":"2025-11-29","max":13.0,"min":4.0,"rain":8.0},{"d":"2025-11-30","max":12.0,"min":4.0,"rain":14.0},{"d":"2025-12-01","max":12.0,"min":4.0,"rain":6.0},{"d":"2025-12-02","max":13.0,"min":5.0,"rain":0.0},{"d":"2025-12-03","max":14.0,"min":6.0,"rain":0.0},{"d":"2025-12-04","max":15.0,"min":7.0,"rain":0.0},{"d":"2025-12-05","max":14.0,"min":6.0,"rain":0.0},{"d":"2025-12-06","max":13.0,"min":5.0,"rain":0.0},{"d":"2025-12-07","max":12.0,"min":4.0,"rain":0.0},{"d":"2025-12-08","max":11.0,"min":3.0,"rain":12.0},{"d":"2025-12-09","max":10.0,"min":2.0,"rain":25.0},{"d":"2025-12-10","max":11.0,"min":3.0,"rain":5.0},{"d":"2025-12-11","max":12.0,"min":4.0,"rain":0.0},{"d":"2025-12-12","max":13.0,"min":5.0,"rain":0.0},{"d":"2025-12-13","max":14.0,"min":6.0,"rain":0.0},{"d":"2025-12-14","max":13.0,"min":5.0,"rain":0.0},{"d":"2025-12-15","max":12.0,"min":4.0,"rain":0.0},{"d":"2025-12-16","max":11.0,"min":3.0,"rain":0.0},{"d":"2025-12-17","max":12.0,"min":4.0,"rain":0.0},{"d":"2025-12-18","max":13.0,"min":5.0,"rain":0.0},{"d":"2025-12-19","max":14.0,"min":6.0,"rain":0.0},{"d":"2025-12-20","max":13.0,"min":5.0,"rain":8.0},{"d":"2025-12-21","max":12.0,"min":4.0,"rain":18.0},{"d":"2025-12-22","max":11.0,"min":3.0,"rain":10.0},{"d":"2025-12-23","max":10.0,"min":2.0,"rain":2.0},{"d":"2025-12-24","max":11.0,"min":3.0,"rain":0.0},{"d":"2025-12-25","max":12.0,"min":4.0,"rain":0.0},{"d":"2025-12-26","max":13.0,"min":5.0,"rain":0.0},{"d":"2025-12-27","max":14.0,"min":6.0,"rain":0.0},{"d":"2025-12-28","max":13.0,"min":5.0,"rain":0.0},{"d":"2025-12-29","max":12.0,"min":4.0,"rain":14.0},{"d":"2025-12-30","max":11.0,"min":3.0,"rain":20.0},{"d":"2025-12-31","max":10.0,"min":2.0,"rain":5.0},{"d":"2026-01-01","max":10.0,"min":2.0,"rain":0.0},{"d":"2026-01-02","max":11.0,"min":3.0,"rain":0.0},{"d":"2026-01-03","max":12.0,"min":4.0,"rain":0.0},{"d":"2026-01-04","max":13.0,"min":5.0,"rain":0.0},{"d":"2026-01-05","max":12.0,"min":4.0,"rain":0.0},{"d":"2026-01-06","max":11.0,"min":3.0,"rain":0.0},{"d":"2026-01-07","max":10.0,"min":2.0,"rain":0.0},{"d":"2026-01-08","max":9.0,"min":1.0,"rain":8.0},{"d":"2026-01-09","max":8.0,"min":0.0,"rain":15.0},{"d":"2026-01-10","max":9.0,"min":1.0,"rain":4.0},{"d":"2026-01-11","max":10.0,"min":2.0,"rain":0.0},{"d":"2026-01-12","max":11.0,"min":3.0,"rain":0.0},{"d":"2026-01-13","max":12.0,"min":4.0,"rain":0.0},{"d":"2026-01-14","max":13.0,"min":5.0,"rain":0.0},{"d":"2026-01-15","max":12.0,"min":4.0,"rain":0.0},{"d":"2026-01-16","max":11.0,"min":3.0,"rain":0.0},{"d":"2026-01-17","max":10.0,"min":2.0,"rain":12.0},{"d":"2026-01-18","max":9.0,"min":1.0,"rain":22.0},{"d":"2026-01-19","max":10.0,"min":2.0,"rain":6.0},{"d":"2026-01-20","max":11.0,"min":3.0,"rain":0.0},{"d":"2026-01-21","max":12.0,"min":4.0,"rain":0.0},{"d":"2026-01-22","max":13.0,"min":5.0,"rain":0.0},{"d":"2026-01-23","max":14.0,"min":6.0,"rain":0.0},{"d":"2026-01-24","max":13.0,"min":5.0,"rain":0.0},{"d":"2026-01-25","max":12.0,"min":4.0,"rain":0.0},{"d":"2026-01-26","max":11.0,"min":3.0,"rain":0.0},{"d":"2026-01-27","max":10.0,"min":2.0,"rain":10.0},{"d":"2026-01-28","max":11.0,"min":3.0,"rain":15.0},{"d":"2026-01-29","max":12.0,"min":4.0,"rain":2.0},{"d":"2026-01-30","max":13.0,"min":5.0,"rain":0.0},{"d":"2026-01-31","max":14.0,"min":6.0,"rain":0.0},{"d":"2026-02-01","max":13.0,"min":5.0,"rain":0.0},{"d":"2026-02-02","max":12.0,"min":4.0,"rain":0.0},{"d":"2026-02-03","max":13.0,"min":5.0,"rain":0.0},{"d":"2026-02-04","max":14.0,"min":6.0,"rain":0.0},{"d":"2026-02-05","max":15.0,"min":7.0,"rain":0.0},{"d":"2026-02-06","max":14.0,"min":6.0,"rain":5.0},{"d":"2026-02-07","max":13.0,"min":5.0,"rain":12.0},{"d":"2026-02-08","max":12.0,"min":4.0,"rain":8.0},{"d":"2026-02-09","max":13.0,"min":5.0,"rain":0.0},{"d":"2026-02-10","max":14.0,"min":6.0,"rain":0.0},{"d":"2026-02-11","max":15.0,"min":7.0,"rain":0.0},{"d":"2026-02-12","max":16.0,"min":8.0,"rain":0.0},{"d":"2026-02-13","max":15.0,"min":7.0,"rain":0.0},{"d":"2026-02-14","max":14.0,"min":6.0,"rain":0.0},{"d":"2026-02-15","max":13.0,"min":5.0,"rain":14.0},{"d":"2026-02-16","max":12.0,"min":4.0,"rain":20.0},{"d":"2026-02-17","max":13.0,"min":5.0,"rain":5.0},{"d":"2026-02-18","max":14.0,"min":6.0,"rain":0.0},{"d":"2026-02-19","max":15.0,"min":7.0,"rain":0.0},{"d":"2026-02-20","max":16.0,"min":8.0,"rain":0.0},{"d":"2026-02-21","max":17.0,"min":9.0,"rain":0.0},{"d":"2026-02-22","max":16.0,"min":8.0,"rain":0.0},{"d":"2026-02-23","max":15.0,"min":7.0,"rain":0.0},{"d":"2026-02-24","max":14.0,"min":6.0,"rain":0.0},{"d":"2026-02-25","max":15.0,"min":7.0,"rain":8.0},{"d":"2026-02-26","max":16.0,"min":8.0,"rain":12.0},{"d":"2026-02-27","max":17.0,"min":9.0,"rain":2.0},{"d":"2026-02-28","max":18.0,"min":10.0,"rain":0.0},{"d":"2026-03-01","max":17.0,"min":9.0,"rain":0.0},{"d":"2026-03-02","max":16.0,"min":8.0,"rain":0.0},{"d":"2026-03-03","max":17.0,"min":9.0,"rain":0.0},{"d":"2026-03-04","max":18.0,"min":10.0,"rain":0.0},{"d":"2026-03-05","max":19.0,"min":11.0,"rain":0.0},{"d":"2026-03-06","max":18.0,"min":10.0,"rain":0.0},{"d":"2026-03-07","max":17.0,"min":9.0,"rain":0.0},{"d":"2026-03-08","max":16.0,"min":8.0,"rain":10.0},{"d":"2026-03-09","max":15.0,"min":7.0,"rain":15.0},{"d":"2026-03-10","max":16.0,"min":8.0,"rain":4.0},{"d":"2026-03-11","max":17.0,"min":9.0,"rain":0.0},{"d":"2026-03-12","max":18.0,"min":10.0,"rain":0.0},{"d":"2026-03-13","max":19.0,"min":11.0,"rain":0.0},{"d":"2026-03-14","max":20.0,"min":12.0,"rain":0.0},{"d":"2026-03-15","max":19.0,"min":11.0,"rain":0.0},{"d":"2026-03-16","max":18.0,"min":10.0,"rain":0.0},{"d":"2026-03-17","max":17.0,"min":9.0,"rain":6.0},{"d":"2026-03-18","max":18.0,"min":10.0,"rain":12.0},{"d":"2026-03-19","max":19.0,"min":11.0,"rain":2.0},{"d":"2026-03-20","max":20.0,"min":12.0,"rain":0.0},{"d":"2026-03-21","max":21.0,"min":13.0,"rain":0.0},{"d":"2026-03-22","max":20.0,"min":12.0,"rain":0.0},{"d":"2026-03-23","max":19.0,"min":11.0,"rain":0.0},{"d":"2026-03-24","max":18.0,"min":10.0,"rain":0.0},{"d":"2026-03-25","max":19.0,"min":11.0,"rain":0.0},{"d":"2026-03-26","max":20.0,"min":12.0,"rain":0.0},{"d":"2026-03-27","max":21.0,"min":13.0,"rain":0.0},{"d":"2026-03-28","max":22.0,"min":14.0,"rain":0.0},{"d":"2026-03-29","max":21.0,"min":13.0,"rain":5.0},{"d":"2026-03-30","max":20.0,"min":12.0,"rain":8.0},{"d":"2026-03-31","max":21.0,"min":13.0,"rain":0.0},{"d":"2026-04-01","max":22.0,"min":14.0,"rain":0.0},{"d":"2026-04-02","max":23.0,"min":15.0,"rain":0.0},{"d":"2026-04-03","max":22.0,"min":14.0,"rain":0.0},{"d":"2026-04-04","max":21.0,"min":13.0,"rain":0.0},{"d":"2026-04-05","max":22.0,"min":14.0,"rain":0.0},{"d":"2026-04-06","max":23.0,"min":15.0,"rain":0.0},{"d":"2026-04-07","max":24.0,"min":16.0,"rain":0.0},{"d":"2026-04-08","max":25.0,"min":17.0,"rain":0.0},{"d":"2026-04-09","max":24.0,"min":16.0,"rain":0.0},{"d":"2026-04-10","max":23.0,"min":15.0,"rain":4.0},{"d":"2026-04-11","max":22.0,"min":14.0,"rain":10.0},{"d":"2026-04-12","max":23.0,"min":15.0,"rain":2.0},{"d":"2026-04-13","max":24.0,"min":16.0,"rain":0.0},{"d":"2026-04-14","max":25.0,"min":17.0,"rain":0.0},{"d":"2026-04-15","max":26.0,"min":18.0,"rain":0.0},{"d":"2026-04-16","max":25.0,"min":17.0,"rain":0.0},{"d":"2026-04-17","max":24.0,"min":16.0,"rain":0.0},{"d":"2026-04-18","max":23.0,"min":15.0,"rain":0.0},{"d":"2026-04-19","max":24.0,"min":16.0,"rain":0.0},{"d":"2026-04-20","max":25.0,"min":17.0,"rain":0.0},{"d":"2026-04-21","max":26.0,"min":18.0,"rain":0.0},{"d":"2026-04-22","max":27.0,"min":19.0,"rain":0.0},{"d":"2026-04-23","max":26.0,"min":18.0,"rain":0.0},{"d":"2026-04-24","max":25.0,"min":17.0,"rain":5.0},{"d":"2026-04-25","max":24.0,"min":16.0,"rain":8.0},{"d":"2026-04-26","max":25.0,"min":17.0,"rain":0.0},{"d":"2026-04-27","max":26.0,"min":18.0,"rain":0.0},{"d":"2026-04-28","max":27.0,"min":19.0,"rain":0.0},{"d":"2026-04-29","max":26.0,"min":18.0,"rain":0.0},{"d":"2026-04-30","max":25.0,"min":17.0,"rain":0.0},{"d":"2026-05-01","max":25.0,"min":16.0,"rain":0.0},{"d":"2026-05-02","max":24.0,"min":15.0,"rain":0.0},{"d":"2026-05-03","max":25.0,"min":16.0,"rain":0.0},{"d":"2026-05-04","max":26.0,"min":16.0,"rain":0.0},{"d":"2026-05-05","max":26.0,"min":17.0,"rain":0.0},{"d":"2026-05-06","max":27.0,"min":17.0,"rain":0.0}];
+const WEATHER_MAP = new Map(WEATHER_DATA.map(w=>[w.d,w]));
 function parseISODate(iso){ const [y,m,d]=String(iso).split('-').map(Number); return new Date(y,m-1,d); }
 function addDays(date, n){ const d=new Date(date); d.setDate(d.getDate()+n); return d; }
 function rowISO(r){
@@ -1160,6 +1180,91 @@ function groupTopRows(){
   classes.forEach(c=> topAbsenceDays({classKey:c.key,label:c.key},1).forEach(r=>out.push(r)));
   return out;
 }
+
+function weatherForTRDate(tr){ const d=parseTRDate(tr); return WEATHER_MAP.get(isoDate(d)); }
+function weatherType(w){
+  if(!w) return 'Veri Yok';
+  const tags=[];
+  if(Number(w.rain)>0) tags.push('Yağışlı'); else tags.push('Yağış Yok');
+  if(Number(w.max)>=30) tags.push('Sıcak');
+  else if(Number(w.max)<=10) tags.push('Soğuk');
+  else if(Number(w.min)<=5) tags.push('Serin');
+  else tags.push('Ilıman');
+  return tags.join(' + ');
+}
+function enrichWeatherRows(rows){
+  return rows.map(r=>{
+    const w=weatherForTRDate(r['TARİH']);
+    return {...r,
+      'MAX °C': w? w.max : '',
+      'MİN °C': w? w.min : '',
+      'YAĞIŞ MM': w? w.rain : '',
+      'HAVA TİPİ': weatherType(w)
+    };
+  }).filter(r=>r['MAX °C']!=='' || r['YAĞIŞ MM']!=='');
+}
+function weatherDailyRows(filter={}, limit=120){
+  return enrichWeatherRows(dailyRows(filter,false))
+    .sort((a,b)=>parseTRDate(b['TARİH'])-parseTRDate(a['TARİH']))
+    .slice(0,limit);
+}
+function weatherTopRows(filter={}, limit=30){
+  return enrichWeatherRows(dailyRows(filter,false))
+    .sort((a,b)=>b['DEVAMSIZ %']-a['DEVAMSIZ %'] || b['YAĞIŞ MM']-a['YAĞIŞ MM'])
+    .slice(0,limit);
+}
+function weatherSummaryRows(filter={}){
+  const rows=enrichWeatherRows(dailyRows(filter,false));
+  const buckets=new Map();
+  rows.forEach(r=>{
+    const keys=[];
+    keys.push(Number(r['YAĞIŞ MM'])>0 ? 'Yağışlı Günler' : 'Yağışsız Günler');
+    if(Number(r['MAX °C'])>=30) keys.push('30°C ve Üzeri Sıcak Günler');
+    if(Number(r['MİN °C'])<=5) keys.push('5°C ve Altı Serin Günler');
+    keys.forEach(k=>{
+      if(!buckets.has(k)) buckets.set(k,[]);
+      buckets.get(k).push(r);
+    });
+  });
+  return [...buckets.entries()].map(([k,arr])=>{
+    const avg=arr.reduce((s,r)=>s+Number(r['DEVAMSIZ %']||0),0)/(arr.length||1);
+    const kız=arr.reduce((s,r)=>s+Number(r['KIZ %']||0),0)/(arr.length||1);
+    const erkek=arr.reduce((s,r)=>s+Number(r['ERKEK %']||0),0)/(arr.length||1);
+    const rain=arr.reduce((s,r)=>s+Number(r['YAĞIŞ MM']||0),0)/(arr.length||1);
+    const max=arr.reduce((s,r)=>s+Number(r['MAX °C']||0),0)/(arr.length||1);
+    const top=arr.slice().sort((a,b)=>b['DEVAMSIZ %']-a['DEVAMSIZ %'])[0]||{};
+    return {'HAVA GRUBU':k,'GÜN SAYISI':arr.length,'ORT. DEVAMSIZ %':Math.round(avg*10)/10,'ORT. KIZ %':Math.round(kız*10)/10,'ORT. ERKEK %':Math.round(erkek*10)/10,'ORT. MAX °C':Math.round(max*10)/10,'ORT. YAĞIŞ MM':Math.round(rain*10)/10,'EN YÜKSEK TARİH':top['TARİH']||'','EN YÜKSEK %':top['DEVAMSIZ %']||0};
+  });
+}
+const weatherHeaders=[['Tarih','TARİH'],['Gün','GÜN'],['Birim','BİRİM'],['Devamsız %','DEVAMSIZ %'],['Devamsız Öğrenci','DEVAMSIZ ÖĞRENCİ'],['Kız %','KIZ %'],['Erkek %','ERKEK %'],['Max °C','MAX °C'],['Min °C','MİN °C'],['Yağış mm','YAĞIŞ MM'],['Hava Tipi','HAVA TİPİ'],['Özürsüz Gün','ÖZÜRSÜZ GÜN'],['Özürlü Gün','ÖZÜRLÜ GÜN'],['Toplam Gün','TOPLAM GÜN']];
+const weatherSummaryHeaders=[['Hava Grubu','HAVA GRUBU'],['Gün Sayısı','GÜN SAYISI'],['Ort. Devamsız %','ORT. DEVAMSIZ %'],['Ort. Kız %','ORT. KIZ %'],['Ort. Erkek %','ORT. ERKEK %'],['Ort. Max °C','ORT. MAX °C'],['Ort. Yağış mm','ORT. YAĞIŞ MM'],['En Yüksek Tarih','EN YÜKSEK TARİH'],['En Yüksek %','EN YÜKSEK %']];
+function renderWeatherAnalysis(){
+  const daily=weatherDailyRows({},80), summary=weatherSummaryRows({}), top=weatherTopRows({},30);
+  const set=(id,headers,rows)=>{ const el=document.getElementById(id); if(el) el.innerHTML=tableHTML(headers,rows); };
+  set('weatherDailyTable',weatherHeaders,daily);
+  set('weatherSummaryTable',weatherSummaryHeaders,summary);
+  set('weatherTopTable',weatherHeaders,top);
+}
+function renderClassWeatherAnalysis(){
+  if(!currentClassKey) return;
+  const filter={classKey:currentClassKey,label:currentClassKey};
+  const set=(id,headers,rows)=>{ const el=document.getElementById(id); if(el) el.innerHTML=tableHTML(headers,rows); };
+  set('classWeatherDailyTable',weatherHeaders,weatherDailyRows(filter,80));
+  set('classWeatherSummaryTable',weatherSummaryHeaders,weatherSummaryRows(filter));
+  set('classWeatherTopTable',weatherHeaders,weatherTopRows(filter,20));
+}
+function exportWeatherDailyExcel(){downloadXlsx(weatherDailyRows({},1000),'hava_durumu_gunluk_devamsizlik.xlsx')}
+function exportWeatherSummaryExcel(){downloadXlsx(weatherSummaryRows({}),'hava_durumu_ortalama_analiz.xlsx')}
+function exportWeatherTopExcel(){downloadXlsx(weatherTopRows({},200),'hava_durumu_en_yuksek_gunler.xlsx')}
+function exportClassWeatherAnalysisExcel(){
+  if(!currentClassKey) return;
+  const filter={classKey:currentClassKey,label:currentClassKey}; const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(weatherDailyRows(filter,1000)),'Günlük Hava');
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(weatherSummaryRows(filter)),'Hava Ortalama');
+  XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(weatherTopRows(filter,200)),'Hava En Yüksek');
+  XLSX.writeFile(wb,currentClassKey+'_hava_durumu_devamsizlik_analizi.xlsx');
+}
+
 const mebHeaders=[['Tarih','TARİH'],['Gün','GÜN'],['Birim','BİRİM'],['Dönem','DÖNEM'],['Aşama','AŞAMA'],['Öğrenci','ÖĞRENCİ'],['Devamsız Öğrenci','DEVAMSIZ ÖĞRENCİ'],['Devamsız %','DEVAMSIZ %'],['Kız Öğrenci','KIZ ÖĞRENCİ'],['Kız Devamsız','KIZ DEVAMSIZ'],['Kız %','KIZ %'],['Erkek Öğrenci','ERKEK ÖĞRENCİ'],['Erkek Devamsız','ERKEK DEVAMSIZ'],['Erkek %','ERKEK %'],['Özürsüz Gün','ÖZÜRSÜZ GÜN'],['Özürlü Gün','ÖZÜRLÜ GÜN'],['Toplam Gün','TOPLAM GÜN']];
 function renderMebCalendarAnalysis(){
   const top=topAbsenceDays({},20); const week=weekdayAnalysisRows({}); const fm=fridayMondayRows({}); const exam=examAnalysisRows({}); const groupTop=groupTopRows();
@@ -1195,7 +1300,7 @@ function renderClassMebAnalysis(){
   set('classMebTopDaysTable',mebHeaders,top); set('classMebWeekdayTable',[['Gün','GÜN'],['Veri Olan Gün','VERİ OLAN GÜN'],['Ortalama Devamsız %','ORTALAMA DEVAMSIZ %'],['En Yüksek Tarih','EN YÜKSEK TARİH'],['En Yüksek %','EN YÜKSEK %'],['Kız En Yüksek %','KIZ EN YÜKSEK %'],['Erkek En Yüksek %','ERKEK EN YÜKSEK %'],['Öğrenci','ÖĞRENCİ']],week);
   set('classMebFridayMondayTable',mebHeaders.concat([['Eşleşme','EŞLEŞME']]),fm); set('classMebExamTable',mebHeaders,exam);
 }
-function exportMebFullExcel(){ const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(topAbsenceDays({},100)),'En Yüksek Günler'); XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(weekdayAnalysisRows({})),'Haftanın Günleri'); XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(fridayMondayRows({})),'Cuma Pazartesi'); XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(examAnalysisRows({})),'Sınav Haftaları'); XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(groupTopRows()),'Seviye Sınıf Top'); XLSX.writeFile(wb,'meb_takvimli_devamsizlik_analizi.xlsx'); }
+function exportMebFullExcel(){ const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(topAbsenceDays({},100)),'En Yüksek Günler'); XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(weekdayAnalysisRows({})),'Haftanın Günleri'); XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(fridayMondayRows({})),'Cuma Pazartesi'); XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(examAnalysisRows({})),'Sınav Haftaları'); XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(groupTopRows()),'Seviye Sınıf Top'); XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(weatherDailyRows({},1000)),'Hava Günlük'); XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(weatherSummaryRows({})),'Hava Ortalama'); XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(weatherTopRows({},200)),'Hava En Yüksek'); XLSX.writeFile(wb,'meb_hava_durumlu_devamsizlik_analizi.xlsx'); }
 function exportMebTopDaysExcel(){downloadXlsx(topAbsenceDays({},100),'meb_en_yuksek_devamsizlik_gunleri.xlsx')}
 function exportMebWeekdayExcel(){downloadXlsx(weekdayAnalysisRows({}),'meb_haftanin_gunleri.xlsx')}
 function exportMebFridayMondayExcel(){downloadXlsx(fridayMondayRows({}),'meb_cuma_pazartesi.xlsx')}
@@ -1231,7 +1336,7 @@ function renderHome(){
     </div>`;
   }).join('');
   renderStatsPanel();
-  renderMebCalendarAnalysis();
+  renderMebCalendarAnalysis(); renderWeatherAnalysis();
 }
 function showHome(){ currentClassKey=null; currentStudentNo=null; renderHome(); }
 function openClass(key){
@@ -1247,7 +1352,7 @@ function openClass(key){
   document.getElementById('studentDetail').classList.add('hidden');
   renderStudentCards();
   renderClassTable();
-  renderClassMebAnalysis();
+  renderClassMebAnalysis(); renderClassWeatherAnalysis();
 }
 function renderStudentCards(){
   const c=classes.find(x=>x.key===currentClassKey); if(!c) return;
