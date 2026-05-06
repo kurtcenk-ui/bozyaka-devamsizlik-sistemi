@@ -1,4 +1,4 @@
-const CACHE_NAME = "devamsizlik-takip-v5-weather";
+const CACHE_NAME = "devamsizlik-takip-v6-weather-advanced";
 const STATIC_ASSETS = [
   "/manifest.json",
   "/icons/icon-192.png",
