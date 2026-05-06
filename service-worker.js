@@ -1,4 +1,4 @@
-const CACHE_NAME = "devamsizlik-takip-v8-table-stack-fix";
+const CACHE_NAME = "devamsizlik-takip-v9-sticky-table-head";
 const STATIC_ASSETS = [
   "/manifest.json",
   "/icons/icon-192.png",
