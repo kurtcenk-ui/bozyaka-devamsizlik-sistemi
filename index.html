@@ -86,7 +86,7 @@ tr:hover td{background:#f8fafc}
 .select{padding:11px 14px;border:1px solid var(--border);border-radius:12px;background:#fff;font-size:14px;font-weight:700;color:#172033}
 .stats-panel-grid{display:grid;grid-template-columns:1.25fr .95fr;gap:16px}
 @media(max-width:980px){.stats-panel-grid{grid-template-columns:1fr}}
-.chart-box{background:#fff;border:1px solid var(--border);border-radius:16px;padding:14px;box-shadow:0 6px 18px rgba(15,23,42,.06);margin-bottom:14px}
+.chart-box{background:#fff;border:1px solid var(--border);border-radius:16px;padding:14px;box-shadow:0 6px 18px rgba(15,23,42,.06);margin-bottom:14px;min-width:0;max-width:100%;overflow:hidden}
 .chart-title{font-weight:900;margin:0 0 10px;color:#172033}
 .bar-row{display:grid;grid-template-columns:92px 1fr 86px;gap:10px;align-items:center;margin:8px 0;font-size:13px}
 .bar-label{font-weight:800;color:#334155;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -113,16 +113,19 @@ tr:hover td{background:#f8fafc}
 .meb-kpi{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-bottom:14px}
 .meb-kpi .stat{border-left:5px solid #2563eb}
 .meb-note{background:#eef2ff;border:1px solid #c7d2fe;color:#1e3a8a;border-radius:14px;padding:12px 14px;font-weight:800;margin:10px 0 14px}
-.meb-mini-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-@media(max-width:980px){.meb-mini-grid{grid-template-columns:1fr}}
+.meb-mini-grid{display:grid;grid-template-columns:1fr;gap:14px}
+@media(min-width:1200px){.meb-mini-grid.two-col-ok{grid-template-columns:1fr 1fr}}
 
 @media(max-width:760px){.header{padding:14px}.actions{width:100%}.btn,.file-label{width:100%;justify-content:center}.collapsible>summary{font-size:16px;padding:15px}.collapsible-body{padding:0 12px 12px}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.stat .num{font-size:22px}table{min-width:980px}.panel{padding:13px}.section-title{align-items:flex-start}.section-actions{width:100%;justify-content:flex-start}.select{width:100%}.toolbar{display:grid;grid-template-columns:1fr;gap:8px}}
 
 
 .analysis-comment{background:linear-gradient(135deg,#f8fafc,#eef2ff);border:1px solid #c7d2fe;border-left:5px solid #2563eb;border-radius:16px;padding:13px 15px;margin:10px 0 14px;color:#1e293b;line-height:1.55;font-size:13px}
 .analysis-comment p{margin:0 0 8px}.analysis-comment p:last-child{margin-bottom:0}
-.table-wrap{max-width:100%;overflow-x:auto}
+.table-wrap{max-width:100%;width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
 @media(max-width:760px){.analysis-comment{font-size:12px;padding:11px}.chart-box{overflow:hidden}.table-wrap{width:100%}}
+.dashboard-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:1100px){.dashboard-grid{grid-template-columns:1fr}}
+.dashboard-bars{min-height:160px}
 
 /* Yerel giriş/rol sistemi */
 .locked #appShell{display:none!important}
@@ -160,6 +163,24 @@ tr:hover td{background:#f8fafc}
 @media(max-width:380px){
   .brand h1{font-size:18px!important}
   .mobile-menu-toggle{padding:9px 11px;font-size:13px}
+}
+
+
+/* === DASHBOARD TABLO TAŞMA DÜZELTMESİ - 2026-05-06 ===
+   Büyük analiz tabloları artık yan yana sıkışmaz. Her tablo kendi satırında tam genişlikte görünür.
+   Geniş tablolar sayfayı değil, sadece kendi içinde yatay kaydırılır. */
+html,body{max-width:100%;overflow-x:hidden!important}
+.container,.collapsible,.collapsible-body,.panel,.chart-box{min-width:0!important;max-width:100%!important}
+.meb-mini-grid,.meb-mini-grid.two-col-ok,.dashboard-grid,.risk-grid,.stats-panel-grid{display:grid!important;grid-template-columns:1fr!important;width:100%!important;gap:16px!important}
+.chart-box{width:100%!important;display:block!important}
+.table-wrap{display:block!important;width:100%!important;max-width:100%!important;overflow-x:auto!important;overflow-y:hidden!important;-webkit-overflow-scrolling:touch!important}
+.table-wrap table{width:max-content!important;min-width:100%!important;max-width:none!important}
+.section-title{min-width:0!important}
+.section-title h2,.section-title h3{min-width:0;overflow-wrap:anywhere}
+.dashboard-bars{width:100%;max-width:100%;overflow:hidden}
+@media(max-width:760px){
+  .table-wrap table{min-width:860px!important}
+  th,td{font-size:12px;padding:9px 10px}
 }
 
 </style>
@@ -330,6 +351,38 @@ tr:hover td{background:#f8fafc}
         <div class="chart-box">
           <div class="section-title"><h3 class="chart-title">Sınıf Düzeyi ve Sınıf Bazlı En Yüksek Günler</h3><button class="btn blue" onclick="exportMebGroupTopExcel()">⬇️ Excel</button></div>
           <div id="mebGroupTopTable" class="table-wrap"></div>
+        </div>
+      </div>
+    </details>
+
+    <details class="collapsible" id="schoolDashboardSection" open>
+      <summary>Okul Geneli Hava + MEB Karşılaştırma Paneli <span class="badge" style="background:#dbeafe;color:#1e3a8a">okul · sınıf düzeyi · sınıf · cinsiyet · hava</span></summary>
+      <div class="collapsible-body">
+        <div class="meb-note">Bu panel, ana sayfada okul geneli, sınıf düzeyi ve sınıf bazında MEB takvimi ile hava durumu etkisini birlikte gösterir. Cinsiyet yüzdeleri, yağışlı/yağışsız gün farkı ve 5°C sıcaklık aralıkları aynı değerlendirme içinde kullanılır.</div>
+        <div class="stats" id="schoolDashboardCards"></div>
+        <div class="dashboard-grid">
+          <div class="chart-box">
+            <div class="section-title"><h3 class="chart-title">Sınıf Karşılaştırma Barları</h3><button class="btn blue" onclick="exportClassWeatherCompareExcel()">⬇️ Excel</button></div>
+            <div id="classWeatherCompareComment" class="analysis-comment"></div>
+            <div id="classWeatherCompareBars" class="dashboard-bars"></div>
+            <div id="classWeatherCompareTable" class="table-wrap"></div>
+          </div>
+          <div class="chart-box">
+            <div class="section-title"><h3 class="chart-title">Sınıf Düzeyi Karşılaştırma</h3><button class="btn blue" onclick="exportLevelWeatherCompareExcel()">⬇️ Excel</button></div>
+            <div id="levelWeatherCompareComment" class="analysis-comment"></div>
+            <div id="levelWeatherCompareBars" class="dashboard-bars"></div>
+            <div id="levelWeatherCompareTable" class="table-wrap"></div>
+          </div>
+        </div>
+        <div class="dashboard-grid">
+          <div class="chart-box">
+            <div class="section-title"><h3 class="chart-title">Yağışlı / Yağışsız Gün Etkisi</h3></div>
+            <div id="schoolRainBars" class="dashboard-bars"></div>
+          </div>
+          <div class="chart-box">
+            <div class="section-title"><h3 class="chart-title">5°C Sıcaklık Aralığı Etkisi</h3></div>
+            <div id="schoolTempBars" class="dashboard-bars"></div>
+          </div>
         </div>
       </div>
     </details>
@@ -1376,6 +1429,63 @@ function paragraphAnalysis(rows, opts={}){
 }
 function setComment(id, html){ const el=document.getElementById(id); if(el) el.innerHTML=html; }
 
+function classWeatherComparisonRows(){
+  return classes.map(c=>{
+    const rows=rowsForScopeWithWeather({classKey:c.key,label:c.key});
+    const rain=rows.filter(r=>Number(r['YAĞIŞ MM']||0)>0);
+    const dry=rows.filter(r=>Number(r['YAĞIŞ MM']||0)<=0);
+    const top=maxRow(rows);
+    return {
+      'SINIF':c.key,'SEVİYE':c.seviye,'ÖĞRENCİ':c.students.length,'VERİ GÜNÜ':rows.length,
+      'ORT. DEVAMSIZ %':avgNum(rows,'DEVAMSIZ %'),'ORT. KIZ %':avgNum(rows,'KIZ %'),'ORT. ERKEK %':avgNum(rows,'ERKEK %'),
+      'YAĞIŞLI ORT. %':avgNum(rain,'DEVAMSIZ %'),'YAĞIŞSIZ ORT. %':avgNum(dry,'DEVAMSIZ %'),
+      'ORT. MAX °C':avgNum(rows,'MAX °C'),'EN YÜKSEK TARİH':top['TARİH']||'','EN YÜKSEK GÜN':top['GÜN']||'','EN YÜKSEK %':top['DEVAMSIZ %']||0
+    };
+  }).sort((a,b)=>Number(b['ORT. DEVAMSIZ %']||0)-Number(a['ORT. DEVAMSIZ %']||0));
+}
+function levelWeatherComparisonRows(){
+  const levels=[...new Set(classes.map(c=>c.seviye))].sort((a,b)=>Number(a)-Number(b));
+  return levels.map(level=>{
+    const rows=rowsForScopeWithWeather({level,label:level+'. Sınıflar'});
+    const rain=rows.filter(r=>Number(r['YAĞIŞ MM']||0)>0);
+    const dry=rows.filter(r=>Number(r['YAĞIŞ MM']||0)<=0);
+    const top=maxRow(rows);
+    const studentCount=classes.filter(c=>c.seviye===level).reduce((a,c)=>a+c.students.length,0);
+    return {
+      'SEVİYE':level+'. Sınıflar','ÖĞRENCİ':studentCount,'VERİ GÜNÜ':rows.length,
+      'ORT. DEVAMSIZ %':avgNum(rows,'DEVAMSIZ %'),'ORT. KIZ %':avgNum(rows,'KIZ %'),'ORT. ERKEK %':avgNum(rows,'ERKEK %'),
+      'YAĞIŞLI ORT. %':avgNum(rain,'DEVAMSIZ %'),'YAĞIŞSIZ ORT. %':avgNum(dry,'DEVAMSIZ %'),
+      'ORT. MAX °C':avgNum(rows,'MAX °C'),'EN YÜKSEK TARİH':top['TARİH']||'','EN YÜKSEK GÜN':top['GÜN']||'','EN YÜKSEK %':top['DEVAMSIZ %']||0
+    };
+  }).sort((a,b)=>Number(b['ORT. DEVAMSIZ %']||0)-Number(a['ORT. DEVAMSIZ %']||0));
+}
+const classWeatherCompareHeaders=[['Sınıf','SINIF'],['Seviye','SEVİYE'],['Öğrenci','ÖĞRENCİ'],['Veri Günü','VERİ GÜNÜ'],['Ort. Devamsız %','ORT. DEVAMSIZ %'],['Ort. Kız %','ORT. KIZ %'],['Ort. Erkek %','ORT. ERKEK %'],['Yağışlı Ort. %','YAĞIŞLI ORT. %'],['Yağışsız Ort. %','YAĞIŞSIZ ORT. %'],['Ort. Max °C','ORT. MAX °C'],['En Yüksek Tarih','EN YÜKSEK TARİH'],['En Yüksek Gün','EN YÜKSEK GÜN'],['En Yüksek %','EN YÜKSEK %']];
+const levelWeatherCompareHeaders=[['Seviye','SEVİYE'],['Öğrenci','ÖĞRENCİ'],['Veri Günü','VERİ GÜNÜ'],['Ort. Devamsız %','ORT. DEVAMSIZ %'],['Ort. Kız %','ORT. KIZ %'],['Ort. Erkek %','ORT. ERKEK %'],['Yağışlı Ort. %','YAĞIŞLI ORT. %'],['Yağışsız Ort. %','YAĞIŞSIZ ORT. %'],['Ort. Max °C','ORT. MAX °C'],['En Yüksek Tarih','EN YÜKSEK TARİH'],['En Yüksek Gün','EN YÜKSEK GÜN'],['En Yüksek %','EN YÜKSEK %']];
+function renderSchoolDashboardPanels(){
+  const classRows=classWeatherComparisonRows();
+  const levelRows=levelWeatherComparisonRows();
+  const rain=rainComparisonRows().filter(r=>r['KAPSAM']==='Okul Geneli');
+  const temp=temperatureBandRows().filter(r=>r['KAPSAM']==='Okul Geneli');
+  const topClass=classRows[0]||{}; const topLevel=levelRows[0]||{};
+  const cards=document.getElementById('schoolDashboardCards');
+  if(cards) cards.innerHTML=statHTML([
+    {label:'En Riskli Sınıf',value:topClass['SINIF']||'-',cls:'red'},
+    {label:'Sınıf Ort. %',value:'%'+fmt(topClass['ORT. DEVAMSIZ %']||0),cls:'red'},
+    {label:'En Riskli Düzey',value:topLevel['SEVİYE']||'-',cls:'orange'},
+    {label:'Düzey Ort. %',value:'%'+fmt(topLevel['ORT. DEVAMSIZ %']||0),cls:'orange'}
+  ]);
+  const ct=document.getElementById('classWeatherCompareTable'); if(ct) ct.innerHTML=tableHTML(classWeatherCompareHeaders,classRows);
+  const lt=document.getElementById('levelWeatherCompareTable'); if(lt) lt.innerHTML=tableHTML(levelWeatherCompareHeaders,levelRows);
+  renderBar('classWeatherCompareBars',classRows.slice(0,12).map(r=>({label:r['SINIF'],value:r['ORT. DEVAMSIZ %']})),'value','label','redbar');
+  renderBar('levelWeatherCompareBars',levelRows.map(r=>({label:r['SEVİYE'],value:r['ORT. DEVAMSIZ %']})),'value','label','orangebar');
+  renderBar('schoolRainBars',rain.map(r=>({label:r['HAVA'],value:r['ORT. DEVAMSIZ %']})),'value','label','greenbar');
+  renderBar('schoolTempBars',temp.map(r=>({label:r['SICAKLIK ARALIĞI'],value:r['ORT. DEVAMSIZ %']})),'value','label','orangebar');
+  setComment('classWeatherCompareComment',paragraphAnalysis(classRows));
+  setComment('levelWeatherCompareComment',paragraphAnalysis(levelRows));
+}
+function exportClassWeatherCompareExcel(){downloadXlsx(classWeatherComparisonRows(),'sinif_karsilastirma_hava_meb_analizi.xlsx')}
+function exportLevelWeatherCompareExcel(){downloadXlsx(levelWeatherComparisonRows(),'sinif_duzeyi_hava_meb_analizi.xlsx')}
+
 function renderWeatherAnalysis(){
   const daily=weatherDailyRows({},80), summary=weatherSummaryRows({}), top=weatherTopRows({},30);
   const rain=rainComparisonRows(), temp=temperatureBandRows(), combo=weatherComboRows(null,140);
@@ -1392,6 +1502,7 @@ function renderWeatherAnalysis(){
   setComment('rainComparisonComment', paragraphAnalysis(rain));
   setComment('temperatureBandComment', paragraphAnalysis(temp));
   setComment('weatherComboComment', paragraphAnalysis(combo));
+  renderSchoolDashboardPanels();
   setComment('mebTopDaysComment', paragraphAnalysis(topAbsenceDays({},20),{metric:'DEVAMSIZ %'}));
   setComment('mebExamComment', paragraphAnalysis(examAnalysisRows({}),{metric:'DEVAMSIZ %'}));
 }
