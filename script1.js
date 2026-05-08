@@ -1,6 +1,3 @@
-
-
-
 function toggleMobileMenu(){
   const header=document.querySelector('.header');
   const btn=document.querySelector('.mobile-menu-toggle');
@@ -896,6 +893,63 @@ function paragraphAnalysis(rows, opts={}){
 }
 function setComment(id, html){ const el=document.getElementById(id); if(el) el.innerHTML=html; }
 
+function classWeatherComparisonRows(){
+  return classes.map(c=>{
+    const rows=rowsForScopeWithWeather({classKey:c.key,label:c.key});
+    const rain=rows.filter(r=>Number(r['YAĞIŞ MM']||0)>0);
+    const dry=rows.filter(r=>Number(r['YAĞIŞ MM']||0)<=0);
+    const top=maxRow(rows);
+    return {
+      'SINIF':c.key,'SEVİYE':c.seviye,'ÖĞRENCİ':c.students.length,'VERİ GÜNÜ':rows.length,
+      'ORT. DEVAMSIZ %':avgNum(rows,'DEVAMSIZ %'),'ORT. KIZ %':avgNum(rows,'KIZ %'),'ORT. ERKEK %':avgNum(rows,'ERKEK %'),
+      'YAĞIŞLI ORT. %':avgNum(rain,'DEVAMSIZ %'),'YAĞIŞSIZ ORT. %':avgNum(dry,'DEVAMSIZ %'),
+      'ORT. MAX °C':avgNum(rows,'MAX °C'),'EN YÜKSEK TARİH':top['TARİH']||'','EN YÜKSEK GÜN':top['GÜN']||'','EN YÜKSEK %':top['DEVAMSIZ %']||0
+    };
+  }).sort((a,b)=>Number(b['ORT. DEVAMSIZ %']||0)-Number(a['ORT. DEVAMSIZ %']||0));
+}
+function levelWeatherComparisonRows(){
+  const levels=[...new Set(classes.map(c=>c.seviye))].sort((a,b)=>Number(a)-Number(b));
+  return levels.map(level=>{
+    const rows=rowsForScopeWithWeather({level,label:level+'. Sınıflar'});
+    const rain=rows.filter(r=>Number(r['YAĞIŞ MM']||0)>0);
+    const dry=rows.filter(r=>Number(r['YAĞIŞ MM']||0)<=0);
+    const top=maxRow(rows);
+    const studentCount=classes.filter(c=>c.seviye===level).reduce((a,c)=>a+c.students.length,0);
+    return {
+      'SEVİYE':level+'. Sınıflar','ÖĞRENCİ':studentCount,'VERİ GÜNÜ':rows.length,
+      'ORT. DEVAMSIZ %':avgNum(rows,'DEVAMSIZ %'),'ORT. KIZ %':avgNum(rows,'KIZ %'),'ORT. ERKEK %':avgNum(rows,'ERKEK %'),
+      'YAĞIŞLI ORT. %':avgNum(rain,'DEVAMSIZ %'),'YAĞIŞSIZ ORT. %':avgNum(dry,'DEVAMSIZ %'),
+      'ORT. MAX °C':avgNum(rows,'MAX °C'),'EN YÜKSEK TARİH':top['TARİH']||'','EN YÜKSEK GÜN':top['GÜN']||'','EN YÜKSEK %':top['DEVAMSIZ %']||0
+    };
+  }).sort((a,b)=>Number(b['ORT. DEVAMSIZ %']||0)-Number(a['ORT. DEVAMSIZ %']||0));
+}
+const classWeatherCompareHeaders=[['Sınıf','SINIF'],['Seviye','SEVİYE'],['Öğrenci','ÖĞRENCİ'],['Veri Günü','VERİ GÜNÜ'],['Ort. Devamsız %','ORT. DEVAMSIZ %'],['Ort. Kız %','ORT. KIZ %'],['Ort. Erkek %','ORT. ERKEK %'],['Yağışlı Ort. %','YAĞIŞLI ORT. %'],['Yağışsız Ort. %','YAĞIŞSIZ ORT. %'],['Ort. Max °C','ORT. MAX °C'],['En Yüksek Tarih','EN YÜKSEK TARİH'],['En Yüksek Gün','EN YÜKSEK GÜN'],['En Yüksek %','EN YÜKSEK %']];
+const levelWeatherCompareHeaders=[['Seviye','SEVİYE'],['Öğrenci','ÖĞRENCİ'],['Veri Günü','VERİ GÜNÜ'],['Ort. Devamsız %','ORT. DEVAMSIZ %'],['Ort. Kız %','ORT. KIZ %'],['Ort. Erkek %','ORT. ERKEK %'],['Yağışlı Ort. %','YAĞIŞLI ORT. %'],['Yağışsız Ort. %','YAĞIŞSIZ ORT. %'],['Ort. Max °C','ORT. MAX °C'],['En Yüksek Tarih','EN YÜKSEK TARİH'],['En Yüksek Gün','EN YÜKSEK GÜN'],['En Yüksek %','EN YÜKSEK %']];
+function renderSchoolDashboardPanels(){
+  const classRows=classWeatherComparisonRows();
+  const levelRows=levelWeatherComparisonRows();
+  const rain=rainComparisonRows().filter(r=>r['KAPSAM']==='Okul Geneli');
+  const temp=temperatureBandRows().filter(r=>r['KAPSAM']==='Okul Geneli');
+  const topClass=classRows[0]||{}; const topLevel=levelRows[0]||{};
+  const cards=document.getElementById('schoolDashboardCards');
+  if(cards) cards.innerHTML=statHTML([
+    {label:'En Riskli Sınıf',value:topClass['SINIF']||'-',cls:'red'},
+    {label:'Sınıf Ort. %',value:'%'+fmt(topClass['ORT. DEVAMSIZ %']||0),cls:'red'},
+    {label:'En Riskli Düzey',value:topLevel['SEVİYE']||'-',cls:'orange'},
+    {label:'Düzey Ort. %',value:'%'+fmt(topLevel['ORT. DEVAMSIZ %']||0),cls:'orange'}
+  ]);
+  const ct=document.getElementById('classWeatherCompareTable'); if(ct) ct.innerHTML=tableHTML(classWeatherCompareHeaders,classRows);
+  const lt=document.getElementById('levelWeatherCompareTable'); if(lt) lt.innerHTML=tableHTML(levelWeatherCompareHeaders,levelRows);
+  renderBar('classWeatherCompareBars',classRows.slice(0,12).map(r=>({label:r['SINIF'],value:r['ORT. DEVAMSIZ %']})),'value','label','redbar');
+  renderBar('levelWeatherCompareBars',levelRows.map(r=>({label:r['SEVİYE'],value:r['ORT. DEVAMSIZ %']})),'value','label','orangebar');
+  renderBar('schoolRainBars',rain.map(r=>({label:r['HAVA'],value:r['ORT. DEVAMSIZ %']})),'value','label','greenbar');
+  renderBar('schoolTempBars',temp.map(r=>({label:r['SICAKLIK ARALIĞI'],value:r['ORT. DEVAMSIZ %']})),'value','label','orangebar');
+  setComment('classWeatherCompareComment',paragraphAnalysis(classRows));
+  setComment('levelWeatherCompareComment',paragraphAnalysis(levelRows));
+}
+function exportClassWeatherCompareExcel(){downloadXlsx(classWeatherComparisonRows(),'sinif_karsilastirma_hava_meb_analizi.xlsx')}
+function exportLevelWeatherCompareExcel(){downloadXlsx(levelWeatherComparisonRows(),'sinif_duzeyi_hava_meb_analizi.xlsx')}
+
 function renderWeatherAnalysis(){
   const daily=weatherDailyRows({},80), summary=weatherSummaryRows({}), top=weatherTopRows({},30);
   const rain=rainComparisonRows(), temp=temperatureBandRows(), combo=weatherComboRows(null,140);
@@ -912,6 +966,7 @@ function renderWeatherAnalysis(){
   setComment('rainComparisonComment', paragraphAnalysis(rain));
   setComment('temperatureBandComment', paragraphAnalysis(temp));
   setComment('weatherComboComment', paragraphAnalysis(combo));
+  renderSchoolDashboardPanels();
   setComment('mebTopDaysComment', paragraphAnalysis(topAbsenceDays({},20),{metric:'DEVAMSIZ %'}));
   setComment('mebExamComment', paragraphAnalysis(examAnalysisRows({}),{metric:'DEVAMSIZ %'}));
 }
@@ -1027,10 +1082,11 @@ function renderHome(){
   renderStatsPanel();
   renderMebCalendarAnalysis(); renderWeatherAnalysis();
 }
-function showHome(){ currentClassKey=null; currentStudentNo=null; renderHome(); }
+function showHome(){ currentClassKey=null; currentStudentNo=null; document.getElementById('riskWorkView')?.classList.add('hidden'); renderHome(); }
 function openClass(key){
   currentClassKey=key; currentStudentNo=null;
   document.getElementById('homeView').classList.add('hidden');
+  document.getElementById('riskWorkView')?.classList.add('hidden');
   document.getElementById('classView').classList.remove('hidden');
   const c=classes.find(x=>x.key===key); const a=getClassAgg(key);
   document.getElementById('classTitle').textContent = `${key} Sınıf Detayı`;
@@ -1138,7 +1194,8 @@ function buildSiteData(){
     updatedAt: new Date().toISOString(),
     updatedAtTR: new Date().toLocaleString('tr-TR'),
     classes: classes,
-    absenceRows: cleanAbsenceRowsForJson()
+    absenceRows: cleanAbsenceRowsForJson(),
+    interventionRecords: (typeof interventionRecords !== 'undefined' ? interventionRecords : [])
   };
 }
 
@@ -1169,6 +1226,7 @@ function applySiteData(data){
   }
 
   absenceRows = Array.isArray(data.absenceRows) ? data.absenceRows : [];
+  if(Array.isArray(data.interventionRecords)){ interventionRecords = data.interventionRecords; try{ localStorage.setItem('riskli_ogrenci_izlem_kayitlari_v1', JSON.stringify(interventionRecords)); }catch(e){} }
   rebuildStudentIndex();
   populateStudentFormOptions();
   const status = document.getElementById('fileStatus');
@@ -1340,4 +1398,84 @@ function exportSummaryExcel(){ downloadReportXlsx(null, 'devamsizlik_tam_rapor.x
 function exportDayMonthExcel(){ const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(classSummaryRows()), 'Genel Toplam'); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dayMonthRows()), 'Ay Gün'); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(monthAnalysisRows()), 'Ay Analizi'); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(perStudentMetricRows('school')), 'Öğrenci Başına Okul'); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(perStudentMetricRows('level')), 'Öğrenci Başına Seviye'); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(perStudentMetricRows('class')), 'Öğrenci Başına Sınıf'); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(riskRows('risk10')), '10 Gün Özürsüz Aşanlar'); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(riskRows('risk30')), '30 Gün Toplam Aşanlar'); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(topAbsenceDays({},100)), 'MEB En Yüksek Günler'); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(examAnalysisRows({})), 'MEB Sınav Haftaları'); XLSX.writeFile(wb, 'devamsizlik_ay_gun.xlsx'); }
 function exportClassSummaryExcel(){ if(!currentClassKey) return; downloadReportXlsx(currentClassKey, currentClassKey+'_tam_rapor.xlsx'); }
 function exportClassDayMonthExcel(){ if(!currentClassKey) return; const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(classSummaryRows(currentClassKey)), 'Genel Toplam'); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dayMonthRows(currentClassKey)), 'Ay Gün'); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(riskRows('risk10', currentClassKey)), '10 Gün Özürsüz Aşanlar'); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(riskRows('risk30', currentClassKey)), '30 Gün Toplam Aşanlar'); XLSX.writeFile(wb, currentClassKey+'_ay_gun.xlsx'); }
+
+/* Riskli Öğrenci İzlem Paneli */
+const INTERVENTION_STORAGE_KEY = "riskli_ogrenci_izlem_kayitlari_v1";
+let interventionRecords = [];
+const INTERVENTION_TYPES = ["Öğrenci görüşmesi yapıldı","Veli görüşmesi yapıldı","Telefonla veli arandı","Veli okula davet edildi","Rehberlik servisine yönlendirildi","İdareye bildirildi","Ulaşılamadı","Diğer"];
+const INTERVENTION_REASONS = ["Sağlık sorunu","Ailevi nedenler","Ekonomik nedenler","Çalışma / işe gitme","Okula uyum sorunu","Akademik başarısızlık","Motivasyon düşüklüğü","Akran ilişkileri","Disiplin / davranış problemi","Ulaşım problemi","Açık liseye geçmek isteme","MESEM’e yönelme","Yurtdışı / şehir dışı taşınma","Veli ilgisizliği","Öğrenciye ulaşılamıyor","Diğer"];
+const INTERVENTION_ACTIONS = ["Öğrenciyle bireysel görüşme yapıldı","Veli telefonla bilgilendirildi","Veli okula davet edildi","Veli yüz yüze görüşmesi yapıldı","Rehberlik servisine yönlendirildi","İdareye bilgi verildi","Devamsızlık sınırı hakkında bilgilendirme yapıldı","Açık lise hakkında bilgilendirme yapıldı","MESEM hakkında bilgilendirme yapıldı","Sağlık kuruluşuna yönlendirme önerildi","Sosyal hizmet yönlendirmesi önerildi","İlçe MEM / ilgili birime bildirim önerildi","Takip görüşmesi planlandı","Öğrenciye ulaşılamadı","Veliye ulaşılamadı"];
+const INTERVENTION_RESULTS = ["Devam takibine alındı","Devamsızlık azaldı","Devamsızlık devam ediyor","Öğrenci okula döndü","Veli görüşmesi bekleniyor","Rehberlik takibine alındı","İdare takibine alındı","Açık liseye yönlendirildi","MESEM’e yönlendirildi","Nakil / taşınma durumu var","Öğrenciye ulaşılamadı","Veliye ulaşılamadı","Süreç tamamlandı","Takip devam ediyor"];
+function escapeHTML(v){return String(v??'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));}
+function loadInterventionRecords(){try{interventionRecords=JSON.parse(localStorage.getItem(INTERVENTION_STORAGE_KEY)||'[]'); if(!Array.isArray(interventionRecords)) interventionRecords=[];}catch(e){interventionRecords=[];}}
+function saveInterventionRecords(){localStorage.setItem(INTERVENTION_STORAGE_KEY, JSON.stringify(interventionRecords));}
+function latestIntervention(no){return interventionRecords.filter(r=>String(r.no)===String(no)).sort((a,b)=>String(b.updatedAt||'').localeCompare(String(a.updatedAt||'')))[0]||null;}
+function riskLevelFor(row){
+  const toplam=Number(row.toplam)||0, ozursuz=Number(row.ozursuz)||0;
+  // Panel mantığı: listeyi şişirmemek için asıl müdahale eşiği 10+ özürsüz veya 30+ toplamdır.
+  // İzleme seviyesi ayrıca gösterilebilir; ilk açılışta müdahale gerektirenler görünür.
+  if(toplam>=50 || ozursuz>=15) return {label:'Acil Müdahale',cls:'urgent'};
+  if(toplam>=30 || ozursuz>=10) return {label:'Kritik',cls:'high'};
+  if(toplam>=20 || ozursuz>=7) return {label:'Riskli',cls:'medium'};
+  if(toplam>=10 || ozursuz>=5) return {label:'İzleme',cls:'watch'};
+  return {label:'Normal',cls:'done'};
+}
+function riskScopePass(row, scope){
+  if(scope==='all') return row.risk!=='Normal';
+  if(scope==='risky') return ['Riskli','Kritik','Acil Müdahale'].includes(row.risk);
+  return ['Kritik','Acil Müdahale'].includes(row.risk);
+}
+function getRiskWorkRows(){const rows=[]; classes.forEach(c=>c.students.forEach(st=>{const a=getStudentAgg(st.no); const row={...st,ozursuz:a.ozursuz,ozurlu:a.ozurlu,toplam:a.toplam,oran:a.oran}; const risk=riskLevelFor(row); if(risk.label==='Normal') return; const rec=latestIntervention(st.no); rows.push({...row,risk:risk.label,riskCls:risk.cls,calismaDurumu:rec?.status||'Bekliyor',sonuc:rec?.result||'',veli:rec?.parent||'',sonTarih:rec?.date||'',sonKayit:rec||null});})); return rows.sort((a,b)=>(b.toplam-a.toplam)||(b.ozursuz-a.ozursuz)||String(a.sinif).localeCompare(String(b.sinif),'tr'));}
+function populateRiskWorkControls(){
+  const cls=document.getElementById('riskWorkClassFilter'); if(cls && cls.options.length<=1){cls.innerHTML='<option value="">Tüm Sınıflar</option>'+classes.map(c=>`<option value="${c.key}">${c.key}</option>`).join('');}
+  const t=document.getElementById('interventionType'); if(t && !t.dataset.ready){t.innerHTML=INTERVENTION_TYPES.map(x=>`<option>${x}</option>`).join(''); t.dataset.ready='1';}
+  const r=document.getElementById('interventionReason'); if(r && !r.dataset.ready){r.innerHTML=INTERVENTION_REASONS.map(x=>`<option>${x}</option>`).join(''); r.dataset.ready='1';}
+  const res=document.getElementById('interventionResult'); if(res && !res.dataset.ready){res.innerHTML=INTERVENTION_RESULTS.map(x=>`<option>${x}</option>`).join(''); res.dataset.ready='1';}
+  const ac=document.getElementById('interventionActions'); if(ac && !ac.dataset.ready){ac.innerHTML=INTERVENTION_ACTIONS.map((x,i)=>`<label class="check-item"><input type="checkbox" value="${escapeHTML(x)}" id="act_${i}"><span>${escapeHTML(x)}</span></label>`).join(''); ac.dataset.ready='1';}
+  const d=document.getElementById('interventionDate'); if(d && !d.value) d.value=new Date().toISOString().slice(0,10);
+}
+function showRiskWorkPanel(){
+  document.getElementById('homeView')?.classList.add('hidden'); document.getElementById('classView')?.classList.add('hidden'); document.getElementById('riskWorkView')?.classList.remove('hidden');
+  closeMobileMenu(); loadInterventionRecords(); populateRiskWorkControls(); renderRiskWorkPanel();
+}
+function statusPill(status){const cls=status==='Tamamlandı'?'done':status==='Bekliyor'?'empty':'watch'; return `<span class="risk-pill ${cls}">${escapeHTML(status||'Bekliyor')}</span>`;}
+function renderRiskWorkPanel(){
+  loadInterventionRecords(); populateRiskWorkControls();
+  const classFilter=(document.getElementById('riskWorkClassFilter')||{}).value||'';
+  const levelFilter=(document.getElementById('riskWorkLevelFilter')||{}).value||'';
+  const statusFilter=(document.getElementById('riskWorkStatusFilter')||{}).value||'';
+  const riskFilter=(document.getElementById('riskWorkRiskFilter')||{}).value||'';
+  const scopeFilter=(document.getElementById('riskWorkScopeFilter')||{}).value||'critical';
+  const q=normalizeName((document.getElementById('riskWorkSearch')||{}).value||'').toLocaleUpperCase('tr-TR');
+  const baseRows=getRiskWorkRows().filter(r=>riskScopePass(r, scopeFilter));
+  let rows=baseRows.filter(r=>(!classFilter||r.sinif===classFilter)&&(!levelFilter||r.seviye===levelFilter)&&(!statusFilter||r.calismaDurumu===statusFilter)&&(!riskFilter||r.risk===riskFilter)&&(!q||String(r.no).includes(q)||String(r.adSoyad).toLocaleUpperCase('tr-TR').includes(q)));
+  const all=baseRows;
+  const kpi=document.getElementById('riskWorkKpis'); if(kpi){const counts={total:all.length,bekleyen:all.filter(r=>r.calismaDurumu==='Bekliyor').length,takip:all.filter(r=>r.calismaDurumu==='Takipte').length,tamam:all.filter(r=>r.calismaDurumu==='Tamamlandı').length,acil:all.filter(r=>r.risk==='Acil Müdahale').length}; kpi.innerHTML=[['Listelenen Öğrenci',counts.total],['Bekleyen',counts.bekleyen],['Takipte',counts.takip],['Tamamlanan',counts.tamam],['Acil Müdahale',counts.acil]].map(x=>`<div class="risk-work-kpi"><div class="num">${x[1]}</div><div class="label">${x[0]}</div></div>`).join('');}
+  const el=document.getElementById('riskWorkTable'); if(!el) return;
+  el.innerHTML=`<table><thead><tr><th>Sınıf</th><th>No</th><th>Ad Soyad</th><th>Özürsüz</th><th>Özürlü</th><th>Toplam</th><th>Risk</th><th>Çalışma</th><th>Veli</th><th>Sonuç</th><th>Son Tarih</th><th>İşlem</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${escapeHTML(r.sinif)}</td><td>${escapeHTML(r.no)}</td><td><b>${escapeHTML(r.adSoyad)}</b></td><td class="right">${fmt(r.ozursuz)}</td><td class="right">${fmt(r.ozurlu)}</td><td class="right"><b>${fmt(r.toplam)}</b></td><td><span class="risk-pill ${r.riskCls}">${escapeHTML(r.risk)}</span></td><td>${statusPill(r.calismaDurumu)}</td><td>${escapeHTML(r.veli||'-')}</td><td>${escapeHTML(r.sonuc||'-')}</td><td>${escapeHTML(r.sonTarih||'-')}</td><td><div class="row-actions"><button class="small-btn" onclick="selectRiskStudent('${String(r.no).replace(/'/g,"\\'")}')">Aç</button>${r.sonKayit?`<button class="small-btn danger" onclick="deleteInterventionRecord('${String(r.no).replace(/'/g,"\\'")}')">Sil</button>`:''}</div></td></tr>`).join('')||'<tr><td colspan="12">Filtreye uygun riskli öğrenci bulunamadı.</td></tr>'}</tbody></table>`;
+}
+function selectRiskStudent(no){
+  const st=studentIndex.get(String(no)); if(!st) return alert('Öğrenci bulunamadı.'); const a=getStudentAgg(no); const risk=riskLevelFor({...st,...a}); const rec=latestIntervention(no);
+  document.getElementById('interventionStudentNo').value=st.no;
+  document.getElementById('selectedRiskStudent').innerHTML=`<b>${escapeHTML(st.adSoyad)}</b><div>${escapeHTML(st.sinif)} · No: ${escapeHTML(st.no)} · Özürsüz: ${fmt(a.ozursuz)} · Özürlü: ${fmt(a.ozurlu)} · Toplam: ${fmt(a.toplam)} · <span class="risk-pill ${risk.cls}">${risk.label}</span></div>`;
+  document.getElementById('interventionDate').value=rec?.date || new Date().toISOString().slice(0,10);
+  document.getElementById('interventionType').value=rec?.type || INTERVENTION_TYPES[0];
+  document.getElementById('interventionReason').value=rec?.reason || INTERVENTION_REASONS[0];
+  document.getElementById('interventionParent').value=rec?.parent || 'Evet';
+  document.getElementById('interventionResult').value=rec?.result || 'Takip devam ediyor';
+  document.getElementById('interventionNextDate').value=rec?.nextDate || '';
+  document.getElementById('interventionStatus').value=rec?.status || 'Takipte';
+  document.getElementById('interventionNote').value=rec?.note || '';
+  const acts=new Set(rec?.actions||[]); document.querySelectorAll('#interventionActions input[type="checkbox"]').forEach(x=>x.checked=acts.has(x.value));
+}
+function clearInterventionForm(){document.getElementById('interventionForm')?.reset(); document.getElementById('interventionStudentNo').value=''; document.getElementById('selectedRiskStudent').textContent='Henüz öğrenci seçilmedi.'; document.querySelectorAll('#interventionActions input[type="checkbox"]').forEach(x=>x.checked=false); const d=document.getElementById('interventionDate'); if(d) d.value=new Date().toISOString().slice(0,10);}
+function saveInterventionRecord(e){
+  e.preventDefault(); loadInterventionRecords(); const no=document.getElementById('interventionStudentNo').value; if(!no) return alert('Önce listeden öğrenci seçmelisin.'); const st=studentIndex.get(String(no)); if(!st) return alert('Öğrenci bulunamadı.'); const a=getStudentAgg(no); const actions=[...document.querySelectorAll('#interventionActions input[type="checkbox"]:checked')].map(x=>x.value);
+  const rec={id:String(no),no:String(no),adSoyad:st.adSoyad,sinif:st.sinif,seviye:st.seviye,cinsiyet:st.cinsiyet,ozursuz:a.ozursuz,ozurlu:a.ozurlu,toplam:a.toplam,date:document.getElementById('interventionDate').value,type:document.getElementById('interventionType').value,reason:document.getElementById('interventionReason').value,actions,parent:document.getElementById('interventionParent').value,result:document.getElementById('interventionResult').value,nextDate:document.getElementById('interventionNextDate').value,status:document.getElementById('interventionStatus').value,note:document.getElementById('interventionNote').value,teacher:CURRENT_USER?.name||CURRENT_USER?.email||'',updatedAt:new Date().toISOString()};
+  const idx=interventionRecords.findIndex(x=>String(x.no)===String(no)); if(idx>=0) interventionRecords[idx]=rec; else interventionRecords.push(rec); saveInterventionRecords(); renderRiskWorkPanel(); alert('Çalışma kaydı kaydedildi.');
+}
+function deleteInterventionRecord(no){if(!confirm('Bu öğrencinin çalışma kaydı silinsin mi?')) return; loadInterventionRecords(); interventionRecords=interventionRecords.filter(x=>String(x.no)!==String(no)); saveInterventionRecords(); renderRiskWorkPanel(); clearInterventionForm();}
+function interventionExportRows(){loadInterventionRecords(); return getRiskWorkRows().map(r=>{const rec=latestIntervention(r.no)||{}; return {SINIF:r.sinif,NO:r.no,'ADI SOYADI':r.adSoyad,CİNSİYET:r.cinsiyet,ÖZÜRSÜZ:r.ozursuz,ÖZÜRLÜ:r.ozurlu,TOPLAM:r.toplam,RİSK:r.risk,'ÇALIŞMA DURUMU':rec.status||'Bekliyor','GÖRÜŞME TARİHİ':rec.date||'','GÖRÜŞME TÜRÜ':rec.type||'','DEVAMSIZLIK NEDENİ':rec.reason||'','YAPILAN ÇALIŞMALAR':(rec.actions||[]).join(' | '),'VELİ BİLGİLENDİRME':rec.parent||'',SONUÇ:rec.result||'','SONRAKİ TAKİP':rec.nextDate||'',AÇIKLAMA:rec.note||'',ÖĞRETMEN:rec.teacher||''};});}
+function exportInterventionExcel(){downloadXlsx(interventionExportRows(),'riskli_ogrenci_izlem_calisma_kayitlari.xlsx');}
+
 resumeSession();

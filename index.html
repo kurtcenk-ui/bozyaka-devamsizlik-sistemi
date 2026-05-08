@@ -236,6 +236,25 @@ thead th{
   .table-wrap{max-height:62vh!important}
 }
 
+
+/* Riskli Öğrenci İzlem Paneli */
+.risk-work-layout{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(340px,.65fr);gap:18px;align-items:start}
+@media(max-width:1050px){.risk-work-layout{grid-template-columns:1fr}}
+.risk-work-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:12px 0 18px}
+.risk-work-kpi{background:#fff;border:1px solid var(--border);border-radius:16px;padding:14px;box-shadow:var(--shadow)}
+.risk-work-kpi .num{font-size:25px;font-weight:900;color:var(--primary)}
+.risk-work-kpi .label{font-size:12px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.risk-pill{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:900;white-space:nowrap}
+.risk-pill.watch{background:#fef9c3;color:#854d0e}.risk-pill.medium{background:#ffedd5;color:#9a3412}.risk-pill.high{background:#fee2e2;color:#991b1b}.risk-pill.urgent{background:#7f1d1d;color:#fff}.risk-pill.done{background:#dcfce7;color:#166534}.risk-pill.empty{background:#e5e7eb;color:#374151}
+.intervention-form{background:#fff;border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow);padding:16px;position:sticky;top:98px}
+.intervention-form h3{margin:0 0 6px}.intervention-form .hint{font-size:13px;color:var(--muted);margin-bottom:12px;line-height:1.45}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.form-grid .full{grid-column:1/-1}
+@media(max-width:700px){.form-grid{grid-template-columns:1fr}.intervention-form{position:static}}
+.form-group label{font-weight:900;font-size:12px;color:#374151;margin-bottom:6px;display:block}.form-group input,.form-group select,.form-group textarea{width:100%;border:1px solid var(--border);border-radius:12px;padding:10px 11px;font:inherit;background:#fff;color:var(--text)}.form-group textarea{min-height:88px;resize:vertical}
+.check-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.check-item{display:flex;align-items:flex-start;gap:8px;font-size:13px;background:#f8fafc;border:1px solid #e5e7eb;border-radius:10px;padding:8px}.check-item input{margin-top:2px}
+.student-mini{background:#f8fafc;border:1px solid #e5e7eb;border-radius:14px;padding:12px;margin-bottom:12px}.student-mini b{font-size:16px}.student-mini div{font-size:13px;color:#475569;margin-top:4px}
+.row-actions{display:flex;gap:6px;flex-wrap:wrap}.small-btn{border:0;border-radius:10px;padding:7px 10px;font-weight:900;cursor:pointer;background:#e0e7ff;color:#1e3a8a}.small-btn.danger{background:#fee2e2;color:#991b1b}.small-btn.gray{background:#e5e7eb;color:#374151}
+
 </style>
 </head>
 <body class="locked">
@@ -293,6 +312,7 @@ thead th{
       <label class="file-label primary admin-only">📊 Devamsızlık Excel Yükle<input id="absenceFile" type="file" accept=".xlsx,.xls,.csv" /></label>
       <button class="btn green admin-only" onclick="exportSiteDataJSON()">🌐 Site Verisini JSON İndir</button>
       <button class="btn" onclick="showHome()">🏠 Ana Sayfa</button>
+      <button class="btn blue" onclick="showRiskWorkPanel()">🧭 Riskli Öğrenci İzlem</button>
       <button class="btn gray admin-only" onclick="resetSchoolList()">↩️ Okul Listesini Sıfırla</button>
       <button class="btn blue" onclick="exportSummaryExcel()">⬇️ Özet Excel</button>
       <button class="btn blue" onclick="exportDayMonthExcel()">⬇️ Ay-Gün Excel</button>
@@ -481,6 +501,65 @@ thead th{
         </div>
       </div>
     </details>
+  </div>
+
+
+
+  <div id="riskWorkView" class="hidden">
+    <div class="section-title">
+      <div>
+        <h2>Riskli Öğrenci İzlem Paneli</h2>
+        <p style="margin:4px 0 0;color:var(--muted);font-weight:700">Sınıf rehber öğretmeni görüşme, veli bilgilendirme ve yönlendirme çalışmalarını buradan kaydeder.</p>
+      </div>
+      <button class="btn gray" onclick="showHome()">← Ana Sayfa</button>
+    </div>
+
+    <div class="notice">
+      Bu sürüm Netlify üzerinde statik çalıştığı için kayıtlar tarayıcıda saklanır. Öğretmen kayıtları merkezi toplamak için şimdilik <strong>Çalışma Kayıtları Excel</strong> çıktısı alınabilir; tam merkezi sistem için Google Sheets/Firebase/Supabase bağlantısı gerekir.
+    </div>
+
+    <div class="risk-work-kpis" id="riskWorkKpis"></div>
+
+    <div class="toolbar">
+      <select id="riskWorkClassFilter" class="select" onchange="renderRiskWorkPanel()"><option value="">Tüm Sınıflar</option></select>
+      <select id="riskWorkLevelFilter" class="select" onchange="renderRiskWorkPanel()"><option value="">Tüm Seviyeler</option><option value="9">9. Sınıf</option><option value="10">10. Sınıf</option><option value="11">11. Sınıf</option><option value="12">12. Sınıf</option></select>
+      <select id="riskWorkStatusFilter" class="select" onchange="renderRiskWorkPanel()"><option value="">Tüm Çalışma Durumları</option><option value="Bekliyor">Bekliyor</option><option value="Takipte">Takipte</option><option value="Tamamlandı">Tamamlandı</option></select>
+      <select id="riskWorkScopeFilter" class="select" onchange="renderRiskWorkPanel()"><option value="critical" selected>Müdahale Gerektirenler</option><option value="risky">Riskli ve Üzeri</option><option value="all">İzleme Dahil</option></select>
+      <select id="riskWorkRiskFilter" class="select" onchange="renderRiskWorkPanel()"><option value="">Tüm Riskler</option><option value="İzleme">İzleme</option><option value="Riskli">Riskli</option><option value="Kritik">Kritik</option><option value="Acil Müdahale">Acil Müdahale</option></select>
+      <input id="riskWorkSearch" class="search" placeholder="Öğrenci ara: ad veya no" oninput="renderRiskWorkPanel()" />
+      <button class="btn blue" onclick="exportInterventionExcel()">⬇️ Çalışma Kayıtları Excel</button>
+    </div>
+
+    <div class="risk-work-layout">
+      <div class="chart-box">
+        <div class="section-title"><h3 class="chart-title">Riskli Öğrenciler ve Çalışma Durumu</h3></div>
+        <div id="riskWorkTable" class="table-wrap"></div>
+      </div>
+
+      <div class="intervention-form">
+        <h3>Öğrenci Çalışma Formu</h3>
+        <div class="hint">Listeden öğrenci seç. Görüşme/yönlendirme bilgisini girip kaydet. Aynı öğrenci için son kayıt güncellenir.</div>
+        <div id="selectedRiskStudent" class="student-mini">Henüz öğrenci seçilmedi.</div>
+        <form id="interventionForm" onsubmit="saveInterventionRecord(event)">
+          <input type="hidden" id="interventionStudentNo" />
+          <div class="form-grid">
+            <div class="form-group"><label>Görüşme Tarihi</label><input id="interventionDate" type="date" required /></div>
+            <div class="form-group"><label>Görüşme Türü</label><select id="interventionType" required></select></div>
+            <div class="form-group full"><label>Devamsızlık Nedeni</label><select id="interventionReason" required></select></div>
+            <div class="form-group full"><label>Yapılan Çalışma</label><div class="check-grid" id="interventionActions"></div></div>
+            <div class="form-group"><label>Veli Bilgilendirme</label><select id="interventionParent"><option>Evet</option><option>Hayır</option><option>Ulaşılamadı</option></select></div>
+            <div class="form-group"><label>Sonuç</label><select id="interventionResult" required></select></div>
+            <div class="form-group"><label>Sonraki Takip Tarihi</label><input id="interventionNextDate" type="date" /></div>
+            <div class="form-group"><label>Çalışma Durumu</label><select id="interventionStatus"><option>Takipte</option><option>Tamamlandı</option><option>Bekliyor</option></select></div>
+            <div class="form-group full"><label>Açıklama</label><textarea id="interventionNote" placeholder="Kısa açıklama yazınız..."></textarea></div>
+          </div>
+          <div class="toolbar" style="margin-top:12px;padding:0">
+            <button class="btn greenBtn" type="submit">💾 Kaydet</button>
+            <button class="btn gray" type="button" onclick="clearInterventionForm()">Temizle</button>
+          </div>
+        </form>
+      </div>
+    </div>
   </div>
 
   <div id="classView" class="hidden">
@@ -1671,10 +1750,11 @@ function renderHome(){
   renderStatsPanel();
   renderMebCalendarAnalysis(); renderWeatherAnalysis();
 }
-function showHome(){ currentClassKey=null; currentStudentNo=null; renderHome(); }
+function showHome(){ currentClassKey=null; currentStudentNo=null; document.getElementById('riskWorkView')?.classList.add('hidden'); renderHome(); }
 function openClass(key){
   currentClassKey=key; currentStudentNo=null;
   document.getElementById('homeView').classList.add('hidden');
+  document.getElementById('riskWorkView')?.classList.add('hidden');
   document.getElementById('classView').classList.remove('hidden');
   const c=classes.find(x=>x.key===key); const a=getClassAgg(key);
   document.getElementById('classTitle').textContent = `${key} Sınıf Detayı`;
@@ -1782,7 +1862,8 @@ function buildSiteData(){
     updatedAt: new Date().toISOString(),
     updatedAtTR: new Date().toLocaleString('tr-TR'),
     classes: classes,
-    absenceRows: cleanAbsenceRowsForJson()
+    absenceRows: cleanAbsenceRowsForJson(),
+    interventionRecords: (typeof interventionRecords !== 'undefined' ? interventionRecords : [])
   };
 }
 
@@ -1813,6 +1894,7 @@ function applySiteData(data){
   }
 
   absenceRows = Array.isArray(data.absenceRows) ? data.absenceRows : [];
+  if(Array.isArray(data.interventionRecords)){ interventionRecords = data.interventionRecords; try{ localStorage.setItem('riskli_ogrenci_izlem_kayitlari_v1', JSON.stringify(interventionRecords)); }catch(e){} }
   rebuildStudentIndex();
   populateStudentFormOptions();
   const status = document.getElementById('fileStatus');
@@ -1984,6 +2066,86 @@ function exportSummaryExcel(){ downloadReportXlsx(null, 'devamsizlik_tam_rapor.x
 function exportDayMonthExcel(){ const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(classSummaryRows()), 'Genel Toplam'); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dayMonthRows()), 'Ay Gün'); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(monthAnalysisRows()), 'Ay Analizi'); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(perStudentMetricRows('school')), 'Öğrenci Başına Okul'); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(perStudentMetricRows('level')), 'Öğrenci Başına Seviye'); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(perStudentMetricRows('class')), 'Öğrenci Başına Sınıf'); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(riskRows('risk10')), '10 Gün Özürsüz Aşanlar'); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(riskRows('risk30')), '30 Gün Toplam Aşanlar'); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(topAbsenceDays({},100)), 'MEB En Yüksek Günler'); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(examAnalysisRows({})), 'MEB Sınav Haftaları'); XLSX.writeFile(wb, 'devamsizlik_ay_gun.xlsx'); }
 function exportClassSummaryExcel(){ if(!currentClassKey) return; downloadReportXlsx(currentClassKey, currentClassKey+'_tam_rapor.xlsx'); }
 function exportClassDayMonthExcel(){ if(!currentClassKey) return; const wb=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(classSummaryRows(currentClassKey)), 'Genel Toplam'); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(dayMonthRows(currentClassKey)), 'Ay Gün'); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(riskRows('risk10', currentClassKey)), '10 Gün Özürsüz Aşanlar'); XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(riskRows('risk30', currentClassKey)), '30 Gün Toplam Aşanlar'); XLSX.writeFile(wb, currentClassKey+'_ay_gun.xlsx'); }
+
+/* Riskli Öğrenci İzlem Paneli */
+const INTERVENTION_STORAGE_KEY = "riskli_ogrenci_izlem_kayitlari_v1";
+let interventionRecords = [];
+const INTERVENTION_TYPES = ["Öğrenci görüşmesi yapıldı","Veli görüşmesi yapıldı","Telefonla veli arandı","Veli okula davet edildi","Rehberlik servisine yönlendirildi","İdareye bildirildi","Ulaşılamadı","Diğer"];
+const INTERVENTION_REASONS = ["Sağlık sorunu","Ailevi nedenler","Ekonomik nedenler","Çalışma / işe gitme","Okula uyum sorunu","Akademik başarısızlık","Motivasyon düşüklüğü","Akran ilişkileri","Disiplin / davranış problemi","Ulaşım problemi","Açık liseye geçmek isteme","MESEM’e yönelme","Yurtdışı / şehir dışı taşınma","Veli ilgisizliği","Öğrenciye ulaşılamıyor","Diğer"];
+const INTERVENTION_ACTIONS = ["Öğrenciyle bireysel görüşme yapıldı","Veli telefonla bilgilendirildi","Veli okula davet edildi","Veli yüz yüze görüşmesi yapıldı","Rehberlik servisine yönlendirildi","İdareye bilgi verildi","Devamsızlık sınırı hakkında bilgilendirme yapıldı","Açık lise hakkında bilgilendirme yapıldı","MESEM hakkında bilgilendirme yapıldı","Sağlık kuruluşuna yönlendirme önerildi","Sosyal hizmet yönlendirmesi önerildi","İlçe MEM / ilgili birime bildirim önerildi","Takip görüşmesi planlandı","Öğrenciye ulaşılamadı","Veliye ulaşılamadı"];
+const INTERVENTION_RESULTS = ["Devam takibine alındı","Devamsızlık azaldı","Devamsızlık devam ediyor","Öğrenci okula döndü","Veli görüşmesi bekleniyor","Rehberlik takibine alındı","İdare takibine alındı","Açık liseye yönlendirildi","MESEM’e yönlendirildi","Nakil / taşınma durumu var","Öğrenciye ulaşılamadı","Veliye ulaşılamadı","Süreç tamamlandı","Takip devam ediyor"];
+function escapeHTML(v){return String(v??'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));}
+function loadInterventionRecords(){try{interventionRecords=JSON.parse(localStorage.getItem(INTERVENTION_STORAGE_KEY)||'[]'); if(!Array.isArray(interventionRecords)) interventionRecords=[];}catch(e){interventionRecords=[];}}
+function saveInterventionRecords(){localStorage.setItem(INTERVENTION_STORAGE_KEY, JSON.stringify(interventionRecords));}
+function latestIntervention(no){return interventionRecords.filter(r=>String(r.no)===String(no)).sort((a,b)=>String(b.updatedAt||'').localeCompare(String(a.updatedAt||'')))[0]||null;}
+function riskLevelFor(row){
+  const toplam=Number(row.toplam)||0, ozursuz=Number(row.ozursuz)||0;
+  // Panel mantığı: listeyi şişirmemek için asıl müdahale eşiği 10+ özürsüz veya 30+ toplamdır.
+  // İzleme seviyesi ayrıca gösterilebilir; ilk açılışta müdahale gerektirenler görünür.
+  if(toplam>=50 || ozursuz>=15) return {label:'Acil Müdahale',cls:'urgent'};
+  if(toplam>=30 || ozursuz>=10) return {label:'Kritik',cls:'high'};
+  if(toplam>=20 || ozursuz>=7) return {label:'Riskli',cls:'medium'};
+  if(toplam>=10 || ozursuz>=5) return {label:'İzleme',cls:'watch'};
+  return {label:'Normal',cls:'done'};
+}
+function riskScopePass(row, scope){
+  if(scope==='all') return row.risk!=='Normal';
+  if(scope==='risky') return ['Riskli','Kritik','Acil Müdahale'].includes(row.risk);
+  return ['Kritik','Acil Müdahale'].includes(row.risk);
+}
+function getRiskWorkRows(){const rows=[]; classes.forEach(c=>c.students.forEach(st=>{const a=getStudentAgg(st.no); const row={...st,ozursuz:a.ozursuz,ozurlu:a.ozurlu,toplam:a.toplam,oran:a.oran}; const risk=riskLevelFor(row); if(risk.label==='Normal') return; const rec=latestIntervention(st.no); rows.push({...row,risk:risk.label,riskCls:risk.cls,calismaDurumu:rec?.status||'Bekliyor',sonuc:rec?.result||'',veli:rec?.parent||'',sonTarih:rec?.date||'',sonKayit:rec||null});})); return rows.sort((a,b)=>(b.toplam-a.toplam)||(b.ozursuz-a.ozursuz)||String(a.sinif).localeCompare(String(b.sinif),'tr'));}
+function populateRiskWorkControls(){
+  const cls=document.getElementById('riskWorkClassFilter'); if(cls && cls.options.length<=1){cls.innerHTML='<option value="">Tüm Sınıflar</option>'+classes.map(c=>`<option value="${c.key}">${c.key}</option>`).join('');}
+  const t=document.getElementById('interventionType'); if(t && !t.dataset.ready){t.innerHTML=INTERVENTION_TYPES.map(x=>`<option>${x}</option>`).join(''); t.dataset.ready='1';}
+  const r=document.getElementById('interventionReason'); if(r && !r.dataset.ready){r.innerHTML=INTERVENTION_REASONS.map(x=>`<option>${x}</option>`).join(''); r.dataset.ready='1';}
+  const res=document.getElementById('interventionResult'); if(res && !res.dataset.ready){res.innerHTML=INTERVENTION_RESULTS.map(x=>`<option>${x}</option>`).join(''); res.dataset.ready='1';}
+  const ac=document.getElementById('interventionActions'); if(ac && !ac.dataset.ready){ac.innerHTML=INTERVENTION_ACTIONS.map((x,i)=>`<label class="check-item"><input type="checkbox" value="${escapeHTML(x)}" id="act_${i}"><span>${escapeHTML(x)}</span></label>`).join(''); ac.dataset.ready='1';}
+  const d=document.getElementById('interventionDate'); if(d && !d.value) d.value=new Date().toISOString().slice(0,10);
+}
+function showRiskWorkPanel(){
+  document.getElementById('homeView')?.classList.add('hidden'); document.getElementById('classView')?.classList.add('hidden'); document.getElementById('riskWorkView')?.classList.remove('hidden');
+  closeMobileMenu(); loadInterventionRecords(); populateRiskWorkControls(); renderRiskWorkPanel();
+}
+function statusPill(status){const cls=status==='Tamamlandı'?'done':status==='Bekliyor'?'empty':'watch'; return `<span class="risk-pill ${cls}">${escapeHTML(status||'Bekliyor')}</span>`;}
+function renderRiskWorkPanel(){
+  loadInterventionRecords(); populateRiskWorkControls();
+  const classFilter=(document.getElementById('riskWorkClassFilter')||{}).value||'';
+  const levelFilter=(document.getElementById('riskWorkLevelFilter')||{}).value||'';
+  const statusFilter=(document.getElementById('riskWorkStatusFilter')||{}).value||'';
+  const riskFilter=(document.getElementById('riskWorkRiskFilter')||{}).value||'';
+  const scopeFilter=(document.getElementById('riskWorkScopeFilter')||{}).value||'critical';
+  const q=normalizeName((document.getElementById('riskWorkSearch')||{}).value||'').toLocaleUpperCase('tr-TR');
+  const baseRows=getRiskWorkRows().filter(r=>riskScopePass(r, scopeFilter));
+  let rows=baseRows.filter(r=>(!classFilter||r.sinif===classFilter)&&(!levelFilter||r.seviye===levelFilter)&&(!statusFilter||r.calismaDurumu===statusFilter)&&(!riskFilter||r.risk===riskFilter)&&(!q||String(r.no).includes(q)||String(r.adSoyad).toLocaleUpperCase('tr-TR').includes(q)));
+  const all=baseRows;
+  const kpi=document.getElementById('riskWorkKpis'); if(kpi){const counts={total:all.length,bekleyen:all.filter(r=>r.calismaDurumu==='Bekliyor').length,takip:all.filter(r=>r.calismaDurumu==='Takipte').length,tamam:all.filter(r=>r.calismaDurumu==='Tamamlandı').length,acil:all.filter(r=>r.risk==='Acil Müdahale').length}; kpi.innerHTML=[['Listelenen Öğrenci',counts.total],['Bekleyen',counts.bekleyen],['Takipte',counts.takip],['Tamamlanan',counts.tamam],['Acil Müdahale',counts.acil]].map(x=>`<div class="risk-work-kpi"><div class="num">${x[1]}</div><div class="label">${x[0]}</div></div>`).join('');}
+  const el=document.getElementById('riskWorkTable'); if(!el) return;
+  el.innerHTML=`<table><thead><tr><th>Sınıf</th><th>No</th><th>Ad Soyad</th><th>Özürsüz</th><th>Özürlü</th><th>Toplam</th><th>Risk</th><th>Çalışma</th><th>Veli</th><th>Sonuç</th><th>Son Tarih</th><th>İşlem</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${escapeHTML(r.sinif)}</td><td>${escapeHTML(r.no)}</td><td><b>${escapeHTML(r.adSoyad)}</b></td><td class="right">${fmt(r.ozursuz)}</td><td class="right">${fmt(r.ozurlu)}</td><td class="right"><b>${fmt(r.toplam)}</b></td><td><span class="risk-pill ${r.riskCls}">${escapeHTML(r.risk)}</span></td><td>${statusPill(r.calismaDurumu)}</td><td>${escapeHTML(r.veli||'-')}</td><td>${escapeHTML(r.sonuc||'-')}</td><td>${escapeHTML(r.sonTarih||'-')}</td><td><div class="row-actions"><button class="small-btn" onclick="selectRiskStudent('${String(r.no).replace(/'/g,"\\'")}')">Aç</button>${r.sonKayit?`<button class="small-btn danger" onclick="deleteInterventionRecord('${String(r.no).replace(/'/g,"\\'")}')">Sil</button>`:''}</div></td></tr>`).join('')||'<tr><td colspan="12">Filtreye uygun riskli öğrenci bulunamadı.</td></tr>'}</tbody></table>`;
+}
+function selectRiskStudent(no){
+  const st=studentIndex.get(String(no)); if(!st) return alert('Öğrenci bulunamadı.'); const a=getStudentAgg(no); const risk=riskLevelFor({...st,...a}); const rec=latestIntervention(no);
+  document.getElementById('interventionStudentNo').value=st.no;
+  document.getElementById('selectedRiskStudent').innerHTML=`<b>${escapeHTML(st.adSoyad)}</b><div>${escapeHTML(st.sinif)} · No: ${escapeHTML(st.no)} · Özürsüz: ${fmt(a.ozursuz)} · Özürlü: ${fmt(a.ozurlu)} · Toplam: ${fmt(a.toplam)} · <span class="risk-pill ${risk.cls}">${risk.label}</span></div>`;
+  document.getElementById('interventionDate').value=rec?.date || new Date().toISOString().slice(0,10);
+  document.getElementById('interventionType').value=rec?.type || INTERVENTION_TYPES[0];
+  document.getElementById('interventionReason').value=rec?.reason || INTERVENTION_REASONS[0];
+  document.getElementById('interventionParent').value=rec?.parent || 'Evet';
+  document.getElementById('interventionResult').value=rec?.result || 'Takip devam ediyor';
+  document.getElementById('interventionNextDate').value=rec?.nextDate || '';
+  document.getElementById('interventionStatus').value=rec?.status || 'Takipte';
+  document.getElementById('interventionNote').value=rec?.note || '';
+  const acts=new Set(rec?.actions||[]); document.querySelectorAll('#interventionActions input[type="checkbox"]').forEach(x=>x.checked=acts.has(x.value));
+}
+function clearInterventionForm(){document.getElementById('interventionForm')?.reset(); document.getElementById('interventionStudentNo').value=''; document.getElementById('selectedRiskStudent').textContent='Henüz öğrenci seçilmedi.'; document.querySelectorAll('#interventionActions input[type="checkbox"]').forEach(x=>x.checked=false); const d=document.getElementById('interventionDate'); if(d) d.value=new Date().toISOString().slice(0,10);}
+function saveInterventionRecord(e){
+  e.preventDefault(); loadInterventionRecords(); const no=document.getElementById('interventionStudentNo').value; if(!no) return alert('Önce listeden öğrenci seçmelisin.'); const st=studentIndex.get(String(no)); if(!st) return alert('Öğrenci bulunamadı.'); const a=getStudentAgg(no); const actions=[...document.querySelectorAll('#interventionActions input[type="checkbox"]:checked')].map(x=>x.value);
+  const rec={id:String(no),no:String(no),adSoyad:st.adSoyad,sinif:st.sinif,seviye:st.seviye,cinsiyet:st.cinsiyet,ozursuz:a.ozursuz,ozurlu:a.ozurlu,toplam:a.toplam,date:document.getElementById('interventionDate').value,type:document.getElementById('interventionType').value,reason:document.getElementById('interventionReason').value,actions,parent:document.getElementById('interventionParent').value,result:document.getElementById('interventionResult').value,nextDate:document.getElementById('interventionNextDate').value,status:document.getElementById('interventionStatus').value,note:document.getElementById('interventionNote').value,teacher:CURRENT_USER?.name||CURRENT_USER?.email||'',updatedAt:new Date().toISOString()};
+  const idx=interventionRecords.findIndex(x=>String(x.no)===String(no)); if(idx>=0) interventionRecords[idx]=rec; else interventionRecords.push(rec); saveInterventionRecords(); renderRiskWorkPanel(); alert('Çalışma kaydı kaydedildi.');
+}
+function deleteInterventionRecord(no){if(!confirm('Bu öğrencinin çalışma kaydı silinsin mi?')) return; loadInterventionRecords(); interventionRecords=interventionRecords.filter(x=>String(x.no)!==String(no)); saveInterventionRecords(); renderRiskWorkPanel(); clearInterventionForm();}
+function interventionExportRows(){loadInterventionRecords(); return getRiskWorkRows().map(r=>{const rec=latestIntervention(r.no)||{}; return {SINIF:r.sinif,NO:r.no,'ADI SOYADI':r.adSoyad,CİNSİYET:r.cinsiyet,ÖZÜRSÜZ:r.ozursuz,ÖZÜRLÜ:r.ozurlu,TOPLAM:r.toplam,RİSK:r.risk,'ÇALIŞMA DURUMU':rec.status||'Bekliyor','GÖRÜŞME TARİHİ':rec.date||'','GÖRÜŞME TÜRÜ':rec.type||'','DEVAMSIZLIK NEDENİ':rec.reason||'','YAPILAN ÇALIŞMALAR':(rec.actions||[]).join(' | '),'VELİ BİLGİLENDİRME':rec.parent||'',SONUÇ:rec.result||'','SONRAKİ TAKİP':rec.nextDate||'',AÇIKLAMA:rec.note||'',ÖĞRETMEN:rec.teacher||''};});}
+function exportInterventionExcel(){downloadXlsx(interventionExportRows(),'riskli_ogrenci_izlem_calisma_kayitlari.xlsx');}
+
 resumeSession();
 </script>
 <script>
